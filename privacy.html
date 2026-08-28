@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Политика обработки персональных данных — БАЗА</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=PT+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="hdr">
+  <div class="wrap hdr-in">
+    <a class="brand" href="index.html">
+      <img src="logo/baza-mark.png" alt="">
+      <span style="display:block"><b>БАЗА</b><span>Сноуборды · сервис · прокат</span></span>
+    </a>
+    <nav class="nav">
+      <a href="remont.html">Ремонт</a>
+      <a href="prokat.html">Прокат</a>
+      <a href="catalog.html">Купить</a>
+      <a href="index.html#kontakty">Контакты</a>
+    </nav>
+    <div class="hdr-cta">
+      <button class="burger" aria-label="Меню" aria-expanded="false">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap" style="max-width:780px">
+    <h1 style="font-size:clamp(28px,4vw,42px)">Политика обработки персональных данных</h1>
+    <p class="lead">Редакция от <span id="lg-updated"></span></p>
+
+    <h2>1. Кто обрабатывает данные</h2>
+    <p>Оператором персональных данных, полученных через формы этого сайта, является
+      <b id="lg-entity"></b><span id="lg-ids"></span>, адрес: <span id="lg-address"></span>.
+      Вопросы по обработке данных — <span id="lg-contact"></span>.</p>
+
+    <h2>2. Какие данные собираются</h2>
+    <p>Через формы «Заявка на ремонт», «Заявка на прокат» и «Подбор комплекта» мы получаем
+      только то, что вы вписали сами: имя, номер телефона, а также сведения о снаряжении
+      и параметры подбора (тип снаряжения, описание поломки, даты аренды, рост, размер ноги,
+      уровень катания, комментарий). Автоматически передаётся адрес страницы,
+      с которой отправлена заявка.</p>
+    <p>Мы не собираем паспортные данные, платёжные реквизиты и не запрашиваем
+      документы через сайт.</p>
+
+    <h2>3. Зачем это нужно</h2>
+    <p>Данные используются исключительно для того, чтобы связаться с вами по заявке:
+      подтвердить бронь проката, оценить ремонт, назвать цену и срок, подобрать снаряжение.
+      Рассылок мы не делаем и данные никому не передаём и не продаём.</p>
+
+    <h2>4. Как они хранятся</h2>
+    <p>Заявка передаётся с сайта в служебный чат Telegram нашей команды.
+      Промежуточную передачу выполняет сервис Google Apps Script — данные проходят через него
+      транзитом и не сохраняются в базе на сайте. Доступ к заявкам есть только у сотрудников,
+      которые обрабатывают обращения.</p>
+
+    <h2>5. Сколько хранятся</h2>
+    <p>Заявки хранятся не дольше, чем нужно для работы по обращению и последующего сервисного
+      обслуживания, после чего удаляются. Вы можете в любой момент попросить удалить ваши данные —
+      напишите нам, и мы удалим их в течение 10 рабочих дней.</p>
+
+    <h2>6. Ваши права</h2>
+    <p>Вы вправе получить сведения об обработке ваших данных, потребовать их уточнения,
+      блокирования или уничтожения, а также отозвать согласие на обработку.
+      Для этого достаточно обратиться по контактам, указанным в пункте 1.</p>
+
+    <h2>7. Согласие</h2>
+    <p>Отправляя форму и отмечая соответствующий чекбокс, вы подтверждаете согласие
+      на обработку перечисленных выше данных на условиях этой политики.</p>
+
+    <h2>8. Куки и статистика</h2>
+    <p>Сайт не использует рекламные трекеры и не устанавливает куки для профилирования.
+      Если позже будет подключён счётчик посещаемости, здесь появится отдельный пункт.</p>
+
+    <h2>9. Изменения</h2>
+    <p>Действующая редакция всегда находится на этой странице. Дата редакции указана вверху.</p>
+
+    <p class="mt-32"><a class="btn btn-ghost" href="index.html">На главную</a></p>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div>
+      <img src="logo/baza-logo.png" alt="БАЗА">
+      <p>Сноуборды, сервис, прокат<br>Екатеринбург, Широкий переулок, 6</p>
+    </div>
+    <div><p>© <span data-year></span> БАЗА</p></div>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+(function(){
+  var L = window.LEGAL || {}, B = window.BAZA || {};
+  var set = function(id, v){ var e = document.getElementById(id); if (e) e.textContent = v; };
+  set('lg-updated', L.updated || '—');
+  set('lg-entity',  L.entity  || '[реквизиты не заполнены — см. config.js]');
+  var ids = [];
+  if (L.inn)  ids.push('ИНН ' + L.inn);
+  if (L.ogrn) ids.push('ОГРН ' + L.ogrn);
+  set('lg-ids', ids.length ? ' (' + ids.join(', ') + ')' : '');
+  set('lg-address', L.address || B.addressFull || '—');
+  var contact = [];
+  if (L.email) contact.push(L.email);
+  if (B.phone) contact.push(B.phone);
+  set('lg-contact', contact.length ? contact.join(', ') : '[контакт не заполнен — см. config.js]');
+})();
+</script>
+</body>
+</html>
