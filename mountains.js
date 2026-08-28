@@ -3,8 +3,9 @@
 //  Атмосфера горнолыжки: канатка сбоку и хребты в шапке.
 //
 //  1. Подъёмник. Вдоль правого края идёт трос, по нему едут кресла.
-//     Крутите страницу — канатка едет вместе с вами. Одно кресло
-//     оранжевое: это вы, оно показывает, докуда вы долистали.
+//     Канатка работает всегда — как настоящая, — а когда вы листаете
+//     страницу, она ещё и подгоняется вместе со скроллом. Оранжевое
+//     кресло — это вы: показывает, докуда долистали.
 //     Насечки на тросе — разделы страницы, по ним можно кликать.
 //
 //  2. Хребты в шапке двигаются с разной скоростью: дальние медленно,
@@ -32,8 +33,16 @@
 
     const cable  = document.createElement('div');
     cable.className = 'lift-cable';
+
+    // два движения складываются: постоянный ход задаётся в CSS на .lift-run,
+    // а скролл сдвигает внешний .lift-chairs. Так канатка едет и сама по себе,
+    // и разгоняется, когда листают страницу.
     const chairs = document.createElement('div');
     chairs.className = 'lift-chairs';
+    const run = document.createElement('div');
+    run.className = 'lift-run';
+    chairs.appendChild(run);
+
     const rider  = document.createElement('div');
     rider.className = 'lift-rider';
     rider.innerHTML = chairSVG;
@@ -44,7 +53,7 @@
       c.className = 'lift-chair';
       c.style.top = (i * SPACING) + 'px';
       c.innerHTML = chairSVG;
-      chairs.appendChild(c);
+      run.appendChild(c);
     }
     lift.append(cable, chairs, rider);
 

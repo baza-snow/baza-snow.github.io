@@ -359,6 +359,10 @@ section{ padding:78px 0; }
   background:linear-gradient(180deg, transparent, var(--line) 8%, var(--line) 92%, transparent);
 }
 .lift-chairs{ position:absolute; top:-132px; left:0; right:0; height:100%; will-change:transform; }
+/* постоянный ход канатки: 132px — ровно шаг между креслами,
+   поэтому цикл замыкается незаметно */
+@keyframes lift-run{ from{ transform:translateY(0); } to{ transform:translateY(-132px); } }
+.lift-run{ position:absolute; inset:0; animation:lift-run 11s linear infinite; }
 .lift-chair{ position:absolute; left:25px; color:var(--snow-far); opacity:.34; }
 
 .lift-rider{
@@ -402,10 +406,22 @@ section{ padding:78px 0; }
   .lift-stop{ width:26px; }
   .lift-dot{ left:8px; width:9px; height:9px; }
 }
-@media (max-width:860px){ .lift{ display:none; } }
+
+/* телефоны: канатка едет у самого края, в поле от текста.
+   Насечки убираем — на узком экране по ним всё равно не попасть,
+   а перехватывать касания рядом с краем они не должны. */
+@media (max-width:860px){
+  .lift{ width:20px; }
+  .lift-cable{ left:10px; top:60px; }
+  .lift-chair,.lift-rider{ left:0; }
+  .lift-chair svg,.lift-rider svg{ width:17px; height:20px; }
+  .lift-chair{ opacity:.42; }
+  .lift-nav{ display:none; }
+}
 
 @media (prefers-reduced-motion: reduce){
   .lift-chairs{ transform:none !important; }
+  .lift-run{ animation:none; }
   .lift-rider{ transition:none; }
 }
 
