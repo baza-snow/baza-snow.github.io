@@ -18,6 +18,8 @@
 </head>
 <body>
 
+<aside class="lift"></aside>
+
 <header class="hdr">
   <div class="wrap hdr-in">
     <a class="brand" href="index.html">
@@ -43,6 +45,11 @@
 
 <div class="hero">
   <div class="hero-bg"><img src="photos/shop-stand.jpg" alt=""></div>
+  <div class="range" aria-hidden="true">
+    <div class="range-layer range-1"><svg viewBox="0 0 1440 260" preserveAspectRatio="none"><path fill="currentColor" d="M0 260V150l120-54 130 44 130-70 140 58 130-40 140 62 130-46 140 56 140-48 130 46 110-38V260z"/></svg></div>
+    <div class="range-layer range-2"><svg viewBox="0 0 1440 260" preserveAspectRatio="none"><path fill="currentColor" d="M0 260V186l90-56 110 48 100-82 120 72 120-50 120 72 120-60 120 46 130-68 130 72 130-42 150 52V260z"/></svg></div>
+    <div class="range-layer range-3"><svg viewBox="0 0 1440 260" preserveAspectRatio="none"><path fill="currentColor" d="M0 260v-46l110-46 80 38 110-66 100 60 120-44 120 58 120-46 120 52 130-48 120 44 120-38 110 40 80-28V260z"/></svg></div>
+  </div>
   <div class="wrap hero-in">
     <p class="eyebrow">Продажа</p>
     <h1>Комплект, на котором вы реально поедете</h1>
@@ -86,7 +93,7 @@
 </svg>
 
 <!-- ── КАК ПОДБИРАЕМ ────────────────────────────────────────── -->
-<section class="sec-alt" id="kak-podbiraem" style="border-top:0">
+<section class="sec-alt" id="kak-podbiraem" data-stop="Как подбираем" style="border-top:0">
   <div class="wrap">
     <div class="sec-head">
       <p class="eyebrow">Подбор</p>
@@ -145,7 +152,7 @@
 </section>
 
 <!-- ── ФОРМА ────────────────────────────────────────────────── -->
-<section class="sec-alt" id="zayavka-podbor">
+<section class="sec-alt" id="zayavka-podbor" data-stop="Подбор">
   <div class="wrap" style="max-width:720px">
     <div class="sec-head center" style="margin-left:auto;margin-right:auto">
       <p class="eyebrow">Заявка</p>
@@ -229,5 +236,6 @@
 <script src="config.js"></script>
 <script src="app.js"></script>
 <script src="forms.js"></script>
+<script src="mountains.js"></script>
 </body>
 </html>

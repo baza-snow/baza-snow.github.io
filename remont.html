@@ -18,6 +18,8 @@
 </head>
 <body>
 
+<aside class="lift"></aside>
+
 <header class="hdr">
   <div class="wrap hdr-in">
     <a class="brand" href="index.html">
@@ -33,7 +35,7 @@
     </nav>
     <div class="hdr-cta">
       <a class="hdr-phone" data-phone href="#">&nbsp;</a>
-      <a class="btn btn-primary btn-sm" href="#zayavka-remont">Записаться</a>
+      <a class="btn btn-primary btn-sm" href="#ocenka">Узнать цену</a>
       <button class="burger" aria-label="Меню" aria-expanded="false">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </button>
@@ -43,16 +45,21 @@
 
 <div class="hero">
   <div class="hero-bg"><img src="photos/remont-arbor-2.jpg" alt=""></div>
+  <div class="range" aria-hidden="true">
+    <div class="range-layer range-1"><svg viewBox="0 0 1440 260" preserveAspectRatio="none"><path fill="currentColor" d="M0 260V150l120-54 130 44 130-70 140 58 130-40 140 62 130-46 140 56 140-48 130 46 110-38V260z"/></svg></div>
+    <div class="range-layer range-2"><svg viewBox="0 0 1440 260" preserveAspectRatio="none"><path fill="currentColor" d="M0 260V186l90-56 110 48 100-82 120 72 120-50 120 72 120-60 120 46 130-68 130 72 130-42 150 52V260z"/></svg></div>
+    <div class="range-layer range-3"><svg viewBox="0 0 1440 260" preserveAspectRatio="none"><path fill="currentColor" d="M0 260v-46l110-46 80 38 110-66 100 60 120-44 120 58 120-46 120 52 130-48 120 44 120-38 110 40 80-28V260z"/></svg></div>
+  </div>
   <div class="wrap hero-in">
     <p class="eyebrow">Ремонт и сервис</p>
-    <h1>Скользяк можно вернуть почти из любого состояния</h1>
+    <h1>Здесь снаряжение получает <em>вторую жизнь</em></h1>
     <p class="lead">
       Своя мастерская на Широком переулке, 6. Канты, парафин, заварка задиров,
       вырванный кант, склейка сломанной пополам лыжи, крепления и ботинки.
       Ниже — настоящие работы: слева то, как привезли, справа — как забрали.
     </p>
     <div class="hero-btns">
-      <a class="btn btn-primary" href="#zayavka-remont">Записаться на ремонт</a>
+      <a class="btn btn-primary" href="#ocenka">Узнать цену по фото</a>
       <a class="btn btn-ghost" href="#uslugi">Список услуг</a>
     </div>
   </div>
@@ -103,7 +110,7 @@
 </svg>
 
 <!-- ── УСЛУГИ И ЦЕНЫ ────────────────────────────────────────── -->
-<section class="sec-alt" id="uslugi" style="border-top:0">
+<section class="sec-alt" id="uslugi" data-stop="Что делаем" style="border-top:0">
   <div class="wrap">
     <div class="sec-head">
       <p class="eyebrow">Услуги</p>
@@ -113,13 +120,13 @@
     </div>
     <div class="price-list" id="servicePrices"></div>
     <div class="center mt-32">
-      <a class="btn btn-primary" href="#zayavka-remont">Записаться на ремонт</a>
+      <a class="btn btn-primary" href="#ocenka">Узнать цену по фото</a>
     </div>
   </div>
 </section>
 
 <!-- ── КЕЙСЫ ────────────────────────────────────────────────── -->
-<section id="raboty">
+<section id="raboty" data-stop="Работы">
   <div class="wrap">
     <div class="sec-head">
       <p class="eyebrow">Работы</p>
@@ -152,57 +159,32 @@
   </div>
 </section>
 
-<!-- ── ФОРМА ────────────────────────────────────────────────── -->
-<section id="zayavka-remont">
-  <div class="wrap" style="max-width:720px">
-    <div class="sec-head center" style="margin-left:auto;margin-right:auto">
-      <p class="eyebrow">Заявка</p>
-      <h2>Записаться на ремонт</h2>
-      <p class="lead" style="margin:0 auto">Опишите, что случилось. Заявка сразу уходит нам
-      в Telegram — ответим и скажем цену и срок.</p>
+<!-- ── ОЦЕНКА ПО ФОТО ───────────────────────────────────────── -->
+<section class="utp sec-alt" id="ocenka" data-stop="Оценка по фото" style="border-top:0">
+  <div class="wrap">
+    <div class="utp-head">
+      <div>
+        <span class="utp-badge">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 17V7a2 2 0 0 1 2-2h3l1.5-2h5L16 5h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <circle cx="12" cy="12" r="3.2"/>
+          </svg>
+          Оценка по фото · бесплатно
+        </span>
+        <h2>Пришлите фото поломки — назовём цену</h2>
+        <p class="lead">
+          Отметьте, что случилось, и приложите снимки. Вилку покажем сразу,
+          точную сумму и срок мастер назовёт, посмотрев фотографии.
+        </p>
+      </div>
+      <div class="utp-steps3">
+        <div><b>1</b>Отметить поломку</div>
+        <div><b>2</b>Приложить фото</div>
+        <div><b>3</b>Получить цену</div>
+      </div>
     </div>
 
-    <div class="form-card">
-      <form data-form="remont">
-        <div class="field-2">
-          <div class="field">
-            <label for="r2-name">Как вас зовут</label>
-            <input id="r2-name" name="name" type="text" autocomplete="name" placeholder="Имя">
-          </div>
-          <div class="field">
-            <label for="r2-phone">Телефон *</label>
-            <input id="r2-phone" name="phone" type="tel" required autocomplete="tel" placeholder="+7 900 000-00-00">
-          </div>
-        </div>
-        <div class="field">
-          <label for="r2-item">Что чиним</label>
-          <select id="r2-item" name="item">
-            <option>Сноуборд</option>
-            <option>Горные лыжи</option>
-            <option>Сноубордические ботинки</option>
-            <option>Горнолыжные ботинки</option>
-            <option>Крепления</option>
-            <option>Другое</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="r2-model">Марка и модель, если знаете</label>
-          <input id="r2-model" name="model" type="text" placeholder="Например, Jones Mountain Twin 158">
-        </div>
-        <div class="field">
-          <label for="r2-problem">Что случилось</label>
-          <textarea id="r2-problem" name="problem" placeholder="Например: проехал по камням, скользяк в бороздах, у канта пошла трещина. Нужен парафин и заточка."></textarea>
-        </div>
-        <div class="field" data-photos></div>
-        <label class="agree">
-          <input type="checkbox" name="agree" required>
-          <span>Согласен на обработку персональных данных (<a href="privacy.html">политика</a>)</span>
-        </label>
-        <input class="trap" type="text" name="trap" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <button class="btn btn-primary btn-wide" type="submit">Отправить заявку на ремонт</button>
-        <div class="form-err"></div>
-      </form>
-    </div>
+    <div data-estimate></div>
   </div>
 </section>
 
@@ -231,7 +213,9 @@
 
 <script src="config.js"></script>
 <script src="app.js"></script>
+<script src="estimate.js"></script>
 <script src="photos.js"></script>
 <script src="forms.js"></script>
+<script src="mountains.js"></script>
 </body>
 </html>

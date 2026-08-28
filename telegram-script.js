@@ -37,6 +37,7 @@ function doPost(e) {
       line('👤', 'Имя',       d.name)     +
       line('📞', 'Телефон',   d.phone)    +
       line('🎿', 'Снаряжение', d.item)    +
+      line('🔩', 'Что не так', d.damage)  +
       line('🎿', 'Что нужно', d.kit)      +
       line('🏷', 'Модель',    d.model)    +
       line('📅', 'С какого числа', d.dateFrom) +

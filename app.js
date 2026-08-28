@@ -81,15 +81,20 @@
   }
 
   // ── прайс сервиса ──────────────────────────────────────────
+  const money = n => n.toLocaleString('ru-RU').replace(/ /g, ' ');
   const srvBox = document.getElementById('servicePrices');
   if (srvBox && window.SERVICES) {
-    srvBox.innerHTML = window.SERVICES.map(s => `
+    srvBox.innerHTML = window.SERVICES.filter(s => !s.hidePrice).map(s => {
+      let val = '<div class="price-val soft">цена по осмотру</div>';
+      if (s.from && s.to && s.to > s.from) val = `<div class="price-val">${money(s.from)}–${money(s.to)} ₽</div>`;
+      else if (s.from && s.to === s.from) val = `<div class="price-val">${money(s.from)} ₽</div>`;
+      else if (s.from) val = `<div class="price-val">от ${money(s.from)} ₽</div>`;
+      return `
       <div class="price-row">
         <div><b>${esc(s.name)}</b><span>${esc(s.text)}</span></div>
-        ${s.price
-          ? `<div class="price-val">${esc(s.price)} ₽</div>`
-          : `<div class="price-val soft">цена по осмотру</div>`}
-      </div>`).join('');
+        ${val}
+      </div>`;
+    }).join('');
   }
 
   // ── правила проката ────────────────────────────────────────
