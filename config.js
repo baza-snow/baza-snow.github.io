@@ -28,7 +28,7 @@ window.BAZA = {
   avitoYears: "с 2016 года",
   avitoRating: "5,0",
   avitoReviews: "85",
-  avitoOrders: "98",
+  avitoOrders: "1 198",
   yandexRating: "5,0",
   yandexReviews: "43",
 

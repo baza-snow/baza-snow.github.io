@@ -23,6 +23,21 @@
 
   const money = n => n.toLocaleString('ru-RU').replace(/ /g, ' ');
 
+  // картинки к видам снаряжения: ключ — id из REPAIR_KINDS
+  const ICONS = {
+    board: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">'
+         + '<rect x="6.5" y="1.8" width="11" height="20.4" rx="5.5"/>'
+         + '<path d="M9.2 8.4h5.6M9.2 15.6h5.6"/></svg>',
+    ski:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">'
+         + '<path d="M6.6 22.4V7.2c0-2.6.75-4.2 1.85-4.2s1.85 1.6 1.85 4.2v15.2"/>'
+         + '<path d="M13.7 22.4V7.2c0-2.6.75-4.2 1.85-4.2s1.85 1.6 1.85 4.2v15.2"/></svg>',
+    boots: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">'
+         + '<path d="M6.6 2.6h4.8v8.3c0 .8.4 1.5 1.1 1.9l4.9 2.8a4.2 4.2 0 0 1 2.1 3.6v1.2H6.6z"/>'
+         + '<path d="M6.6 17.4h11.9"/></svg>'
+  };
+  const iconFor = id => ICONS[id] ||
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/></svg>';
+
   function build(box) {
     let kind = KINDS[0].id;
     const picked = new Set();
@@ -31,20 +46,20 @@
       <div class="est">
         <div class="est-steps">
 
-          <section class="est-step">
-            <h3><span class="est-num">1</span> Что чиним</h3>
+          <section class="est-block">
+            <h3 class="est-h">Что чиним</h3>
             <div class="est-kinds" role="radiogroup" aria-label="Что чиним"></div>
           </section>
 
-          <section class="est-step">
-            <h3><span class="est-num">2</span> Что с ним не так</h3>
+          <section class="est-block">
+            <h3 class="est-h">Что с ним не так</h3>
             <p class="est-hint">Отметьте всё, что подходит — можно несколько.</p>
             <div class="est-list"></div>
           </section>
 
-          <section class="est-step">
-            <h3><span class="est-num">3</span> Фото повреждения</h3>
-            <p class="est-hint">Главное — снимите повреждение крупно и при свете.
+          <section class="est-block">
+            <h3 class="est-h">Фото и контакты</h3>
+            <p class="est-hint">Снимите повреждение крупно и при свете.
             По фото мастер называет цену точно, а не «от и до».</p>
             <form class="est-form" data-form="remont">
               <div class="field" data-photos></div>
@@ -99,7 +114,10 @@
 
     kindsBox.innerHTML = KINDS.map((k, i) => `
       <button type="button" class="est-kind${i === 0 ? ' is-on' : ''}" data-kind="${esc(k.id)}"
-              role="radio" aria-checked="${i === 0}">${esc(k.name)}</button>`).join('');
+              role="radio" aria-checked="${i === 0}">
+        <span class="est-kind-ico">${iconFor(k.id)}</span>
+        <span class="est-kind-name">${esc(k.name)}</span>
+      </button>`).join('');
 
     const forKind = () => SRV.filter(s => (s.kinds || []).indexOf(kind) !== -1);
 

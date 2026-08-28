@@ -437,52 +437,107 @@ section{ padding:78px 0; }
 .hero-in{ z-index:2; }
 
 /* ═════════════════════════════════════════════════════════════
+   ПУТЬ ИЗ ТРЁХ ШАГОВ — «отметить → сфотографировать → узнать цену»
+   Шаги соединены пунктиром: видно, что это последовательность,
+   а не три разных предложения.
+   ═════════════════════════════════════════════════════════════ */
+.path3{
+  list-style:none; margin:0 0 44px; padding:0;
+  display:grid; grid-template-columns:repeat(3,1fr); gap:0;
+  position:relative;
+}
+.path3-step{
+  position:relative; padding:0 26px 0 0;
+  display:grid; grid-template-columns:auto 1fr; grid-template-rows:auto auto auto;
+  column-gap:14px; align-items:center;
+}
+/* пунктир между шагами */
+.path3-step:not(:last-child)::after{
+  content:""; position:absolute; left:76px; right:14px; top:25px; height:1px;
+  background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 12px);
+}
+.path3-num{
+  grid-row:1; grid-column:1;
+  width:52px; height:52px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:19px; font-weight:800; color:var(--accent);
+  background:var(--rock); border:1.5px solid var(--accent);
+  position:relative; z-index:1;
+}
+.path3-ico{ grid-row:1; grid-column:2; color:var(--snow-far); justify-self:start; }
+.path3-step b{ grid-row:2; grid-column:1 / -1; font-size:18px; font-weight:800; margin-top:16px; }
+.path3-txt{ grid-row:3; grid-column:1 / -1; font-size:14.5px; line-height:1.5; color:var(--snow-dim); margin-top:6px; padding-right:12px; }
+
+@media (max-width:860px){
+  .path3{ grid-template-columns:1fr; gap:24px; margin-bottom:34px; }
+  .path3-step{ padding:0; grid-template-columns:auto 1fr; }
+  .path3-step:not(:last-child)::after{
+    left:25px; right:auto; top:58px; bottom:-24px; width:1px; height:auto;
+    background:repeating-linear-gradient(180deg,var(--line) 0 6px,transparent 6px 12px);
+  }
+  .path3-num{ width:50px; height:50px; grid-row:1 / span 2; }
+  .path3-ico{ display:none; }
+  .path3-step b{ grid-row:1; grid-column:2; margin-top:0; align-self:end; }
+  .path3-txt{ grid-row:2; grid-column:2; margin-top:4px; align-self:start; }
+}
+
+/* ═════════════════════════════════════════════════════════════
    ОЦЕНКА ПО ФОТО
    ═════════════════════════════════════════════════════════════ */
-.est{ display:grid; grid-template-columns:1fr 340px; gap:26px; align-items:start; }
-.est-steps{ display:flex; flex-direction:column; gap:30px; min-width:0; }
+.est{ display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:28px; align-items:start; }
+.est-steps{ display:flex; flex-direction:column; gap:14px; min-width:0; }
 
-.est-step h3{ display:flex; align-items:center; gap:12px; margin-bottom:8px; }
-.est-num{
-  flex:0 0 auto; width:30px; height:30px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  background:var(--accent); color:#fff; font-size:15px; font-weight:800;
+.est-block{
+  background:var(--rock-2); border:1px solid var(--line);
+  border-radius:var(--radius); padding:24px 26px 26px;
 }
-.est-hint{ color:var(--snow-dim); font-size:15px; margin:0 0 14px 42px; }
-.est-kinds{ display:flex; flex-wrap:wrap; gap:10px; margin-left:42px; }
+.est-h{
+  font-size:12px; font-weight:800; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--snow-far); margin:0 0 16px; padding-bottom:12px;
+  border-bottom:1px solid var(--line);
+}
+.est-hint{ color:var(--snow-dim); font-size:14.5px; margin:-4px 0 16px; }
+
+/* что чиним — крупные карточки, а не мелкие пилюли */
+.est-kinds{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
 .est-kind{
-  font:inherit; font-weight:700; font-size:15px; cursor:pointer;
-  padding:11px 20px; border-radius:999px;
-  background:var(--rock-2); color:var(--snow-dim);
-  border:1px solid var(--line); transition:all .15s;
+  font:inherit; cursor:pointer; text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  padding:20px 12px; border-radius:12px;
+  background:var(--rock); color:var(--snow-dim);
+  border:1px solid var(--line); transition:border-color .15s, background .15s, color .15s;
 }
 .est-kind:hover{ color:var(--snow); border-color:var(--snow-far); }
-.est-kind.is-on{ background:var(--accent); border-color:var(--accent); color:#fff; }
+.est-kind.is-on{ border-color:var(--accent); background:rgba(232,85,42,.09); color:var(--snow); }
 .est-kind:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+.est-kind-ico{ display:block; color:var(--snow-far); transition:color .15s; }
+.est-kind-ico svg{ display:block; width:34px; height:34px; }
+.est-kind.is-on .est-kind-ico{ color:var(--accent); }
+.est-kind-name{ font-size:15px; font-weight:700; line-height:1.2; }
 
-.est-list{ display:flex; flex-direction:column; gap:8px; margin-left:42px; }
+/* что не так — список отметок */
+.est-list{ display:flex; flex-direction:column; gap:8px; }
 .est-item{
-  display:flex; align-items:center; gap:13px; cursor:pointer;
-  padding:14px 18px; border-radius:11px;
-  background:var(--rock-2); border:1px solid var(--line); transition:border-color .15s, background .15s;
+  display:flex; align-items:center; gap:14px; cursor:pointer;
+  padding:14px 16px; border-radius:11px;
+  background:var(--rock); border:1px solid var(--line);
+  transition:border-color .15s, background .15s;
 }
 .est-item:hover{ border-color:var(--snow-far); }
-.est-item.is-on{ border-color:var(--accent); background:rgba(232,85,42,.07); }
+.est-item.is-on{ border-color:var(--accent); background:rgba(232,85,42,.08); }
 .est-item input{ position:absolute; opacity:0; width:0; height:0; }
 .est-tick{
-  flex:0 0 auto; width:21px; height:21px; border-radius:6px;
+  flex:0 0 auto; width:22px; height:22px; border-radius:7px;
   display:flex; align-items:center; justify-content:center;
-  border:1px solid var(--line); background:var(--rock); color:transparent; transition:all .15s;
+  border:1px solid var(--line); background:var(--rock-2); color:transparent; transition:all .15s;
 }
 .est-item.is-on .est-tick{ background:var(--accent); border-color:var(--accent); color:#fff; }
 .est-item input:focus-visible + .est-tick{ outline:2px solid var(--accent); outline-offset:2px; }
 .est-item-txt{ flex:1; min-width:0; }
-.est-item-txt b{ display:block; font-size:15.5px; font-weight:700; }
-.est-item-txt i{ display:block; font-style:normal; font-size:13px; color:var(--snow-far); margin-top:2px; }
+.est-item-txt b{ display:block; font-size:15.5px; font-weight:700; line-height:1.3; }
+.est-item-txt i{ display:block; font-style:normal; font-size:13px; color:var(--snow-far); margin-top:3px; }
 .est-item-price{ font-size:13.5px; font-weight:800; color:var(--snow-far); white-space:nowrap; }
 .est-item.is-on .est-item-price{ color:var(--accent); }
-
-.est-form{ margin-left:42px; }
 
 /* карточка со сметой */
 .est-card{ position:sticky; top:88px; }
@@ -502,13 +557,16 @@ section{ padding:78px 0; }
 .est-card-foot{ margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
 .est-card-foot p{ margin:0; font-size:13px; line-height:1.5; color:var(--snow-far); }
 
-@media (max-width:960px){
+@media (max-width:1050px){
   .est{ grid-template-columns:1fr; }
   .est-card{ position:static; order:-1; }
 }
 @media (max-width:720px){
-  .est-hint,.est-kinds,.est-list,.est-form{ margin-left:0; }
-  .est-item{ padding:12px 14px; gap:10px; }
+  .est-block{ padding:20px 18px 22px; }
+  .est-kinds{ grid-template-columns:1fr; gap:8px; }
+  .est-kind{ flex-direction:row; justify-content:flex-start; gap:14px; padding:14px 16px; text-align:left; }
+  .est-kind-ico svg{ width:26px; height:26px; }
+  .est-item{ padding:12px 14px; gap:11px; }
   .est-item-price{ display:none; }
 }
 
@@ -522,7 +580,7 @@ section{ padding:78px 0; }
   pointer-events:none;
 }
 .utp .wrap{ position:relative; }
-.utp-head{ display:grid; grid-template-columns:1fr auto; gap:30px; align-items:end; margin-bottom:38px; }
+.utp-head{ margin-bottom:34px; max-width:72ch; }
 .utp-badge{
   display:inline-flex; align-items:center; gap:9px;
   font-size:12px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
@@ -530,9 +588,3 @@ section{ padding:78px 0; }
   border-radius:999px; padding:7px 15px; margin-bottom:18px;
 }
 .utp-badge svg{ flex:0 0 auto; }
-.utp-steps3{ display:flex; gap:26px; color:var(--snow-far); font-size:13.5px; white-space:nowrap; }
-.utp-steps3 b{ display:block; color:var(--snow); font-size:15px; font-weight:800; }
-@media (max-width:960px){
-  .utp-head{ grid-template-columns:1fr; align-items:start; }
-  .utp-steps3{ flex-wrap:wrap; gap:18px 26px; white-space:normal; }
-}
