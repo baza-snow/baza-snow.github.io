@@ -27,13 +27,14 @@
     // у правого края картинки, там же в разметке проходит трос.
     const cabinSVG = `
       <svg viewBox="0 0 34 40" width="34" height="40" fill="none"
-           stroke="currentColor" stroke-width="1.6"
+           stroke="currentColor" stroke-width="1.7"
            stroke-linecap="round" stroke-linejoin="round">
-        <rect x="28" y="0.8" width="6" height="4" rx="1.3"/>
+        <rect class="cab-grip" x="28" y="0.8" width="6" height="4" rx="1.3"/>
         <path d="M31 4.8v2.6a5.6 5.6 0 0 1-5.6 5.6H17.6v1.9"/>
-        <rect x="1.6" y="15.2" width="27.4" height="18.2" rx="8"/>
-        <rect x="4.9" y="18" width="20.6" height="9.4" rx="4.6"/>
+        <rect class="cab-body" x="1.6" y="15.2" width="27.4" height="18.2" rx="8"/>
+        <rect class="cab-glass" x="4.9" y="18" width="20.6" height="9.4" rx="4.6"/>
         <path d="M15.2 18v9.4"/>
+        <path d="M5.8 30.5h18"/>
       </svg>`;
 
     // Опора: траверса с роликами на тросе и мачта, уходящая вбок.

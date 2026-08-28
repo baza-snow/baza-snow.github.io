@@ -351,10 +351,10 @@ section{ padding:78px 0; }
    на странице. Насечки — разделы, по ним можно кликать.
    ═════════════════════════════════════════════════════════════ */
 .lift{
-  position:fixed; top:0; right:0; bottom:0; width:78px; z-index:20;
+  position:fixed; top:0; right:0; bottom:0; width:88px; z-index:20;
   pointer-events:none; opacity:0; transition:opacity .5s ease;
-  --cable:52px;                 /* где проходит трос внутри полосы */
-  --cabin:34px;                 /* ширина кабинки */
+  --cable:62px;                 /* где проходит трос внутри полосы */
+  --cabin:42px;                 /* ширина кабинки */
 }
 .lift.is-ready{ opacity:1; }
 
@@ -367,7 +367,7 @@ section{ padding:78px 0; }
 .lift-towers{ position:absolute; inset:0; }
 .lift-tower{
   position:absolute; left:calc(var(--cable) - 4px); margin-top:-17px;
-  color:var(--snow-far); opacity:.3;
+  color:var(--snow-far); opacity:.38;
 }
 .lift-tower svg{ display:block; }
 
@@ -379,8 +379,11 @@ section{ padding:78px 0; }
 .lift-run{ position:absolute; inset:0; animation:lift-run 13s linear infinite; }
 .lift-chair{
   position:absolute; left:calc(var(--cable) - var(--cabin) + 3px);
-  color:var(--snow-far); opacity:.38;
+  color:var(--snow-dim); opacity:.5;
 }
+/* корпус и стекло залиты — иначе контур теряется на фотографии в шапке */
+.lift .cab-body,.lift .cab-grip{ fill:var(--rock); fill-opacity:.85; }
+.lift .cab-glass{ fill:var(--rock-3); fill-opacity:.75; }
 .lift-chair svg,.lift-rider svg{ display:block; width:var(--cabin); height:auto; }
 
 .lift-rider{
@@ -392,7 +395,7 @@ section{ padding:78px 0; }
 
 .lift-nav{ position:absolute; inset:0; }
 .lift-stop{
-  position:absolute; left:0; width:78px; height:22px; margin-top:-11px;
+  position:absolute; left:0; width:88px; height:22px; margin-top:-11px;
   display:flex; align-items:center; text-decoration:none; pointer-events:auto;
 }
 .lift-dot{
@@ -416,11 +419,15 @@ section{ padding:78px 0; }
 .lift-stop:hover .lift-label,
 .lift-stop:focus-visible .lift-label{ opacity:1; transform:translateX(0); }
 
-/* узкие экраны: полоса тоньше, опоры и подписи убираем */
-@media (max-width:1279px){
-  .lift{ width:32px; --cable:24px; --cabin:24px; }
+/* Пока экран широкий, канатка помещается в поле за текстом.
+   Как только запаса нет — отводим ей отдельную полосу справа,
+   иначе кабинки поедут прямо по словам. */
+@media (max-width:1359px){
+  .wrap{ padding-right:58px; }
+  .hero-in{ padding-right:58px; }
+  .lift{ width:48px; --cable:36px; --cabin:34px; }
   .lift-towers,.lift-label{ display:none; }
-  .lift-stop{ width:32px; }
+  .lift-stop{ width:48px; }
   .lift-dot{ width:9px; height:9px; left:calc(var(--cable) - 4px); }
 }
 
@@ -428,9 +435,11 @@ section{ padding:78px 0; }
    Насечки убираем — на узком экране по ним всё равно не попасть,
    а перехватывать касания рядом с краем они не должны. */
 @media (max-width:860px){
-  .lift{ width:28px; --cable:22px; --cabin:22px; }
+  .wrap{ padding-right:46px; }
+  .hero-in{ padding-right:46px; }
+  .lift{ width:40px; --cable:30px; --cabin:30px; }
   .lift-cable{ top:60px; }
-  .lift-chair{ opacity:.45; }
+  .lift-chair{ opacity:.55; }
   .lift-nav{ display:none; }
 }
 
