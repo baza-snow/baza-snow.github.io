@@ -20,15 +20,34 @@
   // ── 1. КАНАТКА ────────────────────────────────────────────
   const lift = document.querySelector('.lift');
   if (lift) {
-    const SPACING = 132;                       // расстояние между креслами, px
-    const chairSVG = `
-      <svg viewBox="0 0 22 26" width="22" height="26" fill="none"
-           stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-        <path d="M11 0v11"/>
-        <path d="M4.5 11h13"/>
-        <path d="M5 11V5.5"/>
-        <path d="M5 16.5h11"/>
-        <path d="M5 11v5.5"/>
+    const SPACING = 150;                       // расстояние между кабинками, px
+
+    // Кабинка гондолы: захват на тросе, изогнутая подвеска и корпус
+    // с широким остеклением — как на настоящей канатке. Захват стоит
+    // у правого края картинки, там же в разметке проходит трос.
+    const cabinSVG = `
+      <svg viewBox="0 0 34 40" width="34" height="40" fill="none"
+           stroke="currentColor" stroke-width="1.6"
+           stroke-linecap="round" stroke-linejoin="round">
+        <rect x="28" y="0.8" width="6" height="4" rx="1.3"/>
+        <path d="M31 4.8v2.6a5.6 5.6 0 0 1-5.6 5.6H17.6v1.9"/>
+        <rect x="1.6" y="15.2" width="27.4" height="18.2" rx="8"/>
+        <rect x="4.9" y="18" width="20.6" height="9.4" rx="4.6"/>
+        <path d="M15.2 18v9.4"/>
+      </svg>`;
+
+    // Опора: траверса с роликами на тросе и мачта, уходящая вбок.
+    // Опоры стоят на месте — кабинки проезжают мимо.
+    const towerSVG = `
+      <svg viewBox="0 0 26 34" width="26" height="34" fill="none"
+           stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 7.5v19"/>
+        <path d="M7 17h16"/>
+        <path d="M5.4 11h1.6M5.4 17h1.6M5.4 23h1.6"/>
+        <circle cx="4" cy="11" r="1.4"/>
+        <circle cx="4" cy="17" r="1.4"/>
+        <circle cx="4" cy="23" r="1.4"/>
       </svg>`;
 
     const cable  = document.createElement('div');
@@ -45,17 +64,29 @@
 
     const rider  = document.createElement('div');
     rider.className = 'lift-rider';
-    rider.innerHTML = chairSVG;
+    rider.innerHTML = cabinSVG;
 
     const need = Math.ceil(window.innerHeight / SPACING) + 3;
     for (let i = 0; i < need; i++) {
       const c = document.createElement('div');
       c.className = 'lift-chair';
       c.style.top = (i * SPACING) + 'px';
-      c.innerHTML = chairSVG;
+      c.innerHTML = cabinSVG;
       run.appendChild(c);
     }
-    lift.append(cable, chairs, rider);
+
+    // опоры — на своих местах вдоль троса
+    const towers = document.createElement('div');
+    towers.className = 'lift-towers';
+    [22, 54, 84].forEach(pos => {
+      const t = document.createElement('div');
+      t.className = 'lift-tower';
+      t.style.top = pos + '%';
+      t.innerHTML = towerSVG;
+      towers.appendChild(t);
+    });
+
+    lift.append(cable, towers, chairs, rider);
 
     // насечки-станции: разделы, которым в разметке задано короткое имя
     // через data-stop. Что не отмечено — на канатке не показываем.

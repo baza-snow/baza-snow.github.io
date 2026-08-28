@@ -344,40 +344,59 @@ section{ padding:78px 0; }
 
 /* ═════════════════════════════════════════════════════════════
    КАНАТКА
-   Трос вдоль правого края, по нему едут кресла. Оранжевое кресло —
-   это читатель: где оно, там он и находится на странице.
-   Насечки — разделы, по ним можно кликать.
+   Трос вдоль правого края, по нему едут кабинки гондолы.
+   Захват кабинки нарисован по правому краю картинки и встаёт ровно
+   на трос. Опоры стоят на месте — кабинки проезжают мимо них.
+   Оранжевая кабинка — это читатель: где она, там он и находится
+   на странице. Насечки — разделы, по ним можно кликать.
    ═════════════════════════════════════════════════════════════ */
 .lift{
-  position:fixed; top:0; right:0; bottom:0; width:74px; z-index:20;
+  position:fixed; top:0; right:0; bottom:0; width:78px; z-index:20;
   pointer-events:none; opacity:0; transition:opacity .5s ease;
+  --cable:52px;                 /* где проходит трос внутри полосы */
+  --cabin:34px;                 /* ширина кабинки */
 }
 .lift.is-ready{ opacity:1; }
 
 .lift-cable{
-  position:absolute; top:68px; bottom:0; left:36px; width:1px;
+  position:absolute; top:68px; bottom:0; left:var(--cable); width:1px;
   background:linear-gradient(180deg, transparent, var(--line) 8%, var(--line) 92%, transparent);
 }
-.lift-chairs{ position:absolute; top:-132px; left:0; right:0; height:100%; will-change:transform; }
-/* постоянный ход канатки: 132px — ровно шаг между креслами,
+
+/* опоры */
+.lift-towers{ position:absolute; inset:0; }
+.lift-tower{
+  position:absolute; left:calc(var(--cable) - 4px); margin-top:-17px;
+  color:var(--snow-far); opacity:.3;
+}
+.lift-tower svg{ display:block; }
+
+/* кабинки */
+.lift-chairs{ position:absolute; top:-150px; left:0; right:0; height:100%; will-change:transform; }
+/* постоянный ход канатки: 150px — ровно шаг между кабинками,
    поэтому цикл замыкается незаметно */
-@keyframes lift-run{ from{ transform:translateY(0); } to{ transform:translateY(-132px); } }
-.lift-run{ position:absolute; inset:0; animation:lift-run 11s linear infinite; }
-.lift-chair{ position:absolute; left:25px; color:var(--snow-far); opacity:.34; }
+@keyframes lift-run{ from{ transform:translateY(0); } to{ transform:translateY(-150px); } }
+.lift-run{ position:absolute; inset:0; animation:lift-run 13s linear infinite; }
+.lift-chair{
+  position:absolute; left:calc(var(--cable) - var(--cabin) + 3px);
+  color:var(--snow-far); opacity:.38;
+}
+.lift-chair svg,.lift-rider svg{ display:block; width:var(--cabin); height:auto; }
 
 .lift-rider{
-  position:absolute; left:25px; color:var(--accent);
+  position:absolute; left:calc(var(--cable) - var(--cabin) + 3px);
+  color:var(--accent);
   filter:drop-shadow(0 0 10px rgba(232,85,42,.45));
   transition:top .12s linear;
 }
 
 .lift-nav{ position:absolute; inset:0; }
 .lift-stop{
-  position:absolute; left:0; width:74px; height:22px; margin-top:-11px;
+  position:absolute; left:0; width:78px; height:22px; margin-top:-11px;
   display:flex; align-items:center; text-decoration:none; pointer-events:auto;
 }
 .lift-dot{
-  position:absolute; left:31px; width:11px; height:11px; border-radius:50%;
+  position:absolute; left:calc(var(--cable) - 5px); width:11px; height:11px; border-radius:50%;
   background:var(--rock); border:1px solid var(--line);
   transition:border-color .2s, background .2s, transform .2s;
 }
@@ -387,7 +406,7 @@ section{ padding:78px 0; }
 .lift-stop:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:6px; }
 
 .lift-label{
-  position:absolute; right:52px; white-space:nowrap;
+  position:absolute; right:38px; white-space:nowrap;
   font-size:11.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
   color:var(--snow-dim); background:var(--rock-2);
   border:1px solid var(--line); border-radius:999px; padding:5px 12px;
@@ -397,25 +416,21 @@ section{ padding:78px 0; }
 .lift-stop:hover .lift-label,
 .lift-stop:focus-visible .lift-label{ opacity:1; transform:translateX(0); }
 
-/* узкие экраны: канатка становится тонкой полоской без подписей */
+/* узкие экраны: полоса тоньше, опоры и подписи убираем */
 @media (max-width:1279px){
-  .lift{ width:26px; }
-  .lift-cable{ left:13px; }
-  .lift-chair,.lift-rider{ left:2px; }
-  .lift-label{ display:none; }
-  .lift-stop{ width:26px; }
-  .lift-dot{ left:8px; width:9px; height:9px; }
+  .lift{ width:32px; --cable:24px; --cabin:24px; }
+  .lift-towers,.lift-label{ display:none; }
+  .lift-stop{ width:32px; }
+  .lift-dot{ width:9px; height:9px; left:calc(var(--cable) - 4px); }
 }
 
-/* телефоны: канатка едет у самого края, в поле от текста.
+/* телефоны: кабинки едут у самого края, в поле от текста.
    Насечки убираем — на узком экране по ним всё равно не попасть,
    а перехватывать касания рядом с краем они не должны. */
 @media (max-width:860px){
-  .lift{ width:20px; }
-  .lift-cable{ left:10px; top:60px; }
-  .lift-chair,.lift-rider{ left:0; }
-  .lift-chair svg,.lift-rider svg{ width:17px; height:20px; }
-  .lift-chair{ opacity:.42; }
+  .lift{ width:28px; --cable:22px; --cabin:22px; }
+  .lift-cable{ top:60px; }
+  .lift-chair{ opacity:.45; }
   .lift-nav{ display:none; }
 }
 
