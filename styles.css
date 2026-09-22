@@ -612,3 +612,52 @@ section{ padding:78px 0; }
   border-radius:999px; padding:7px 15px; margin-bottom:18px;
 }
 .utp-badge svg{ flex:0 0 auto; }
+
+/* ═════════════════════════════════════════════════════════════
+   ТЕЛЕФОН
+   Номер должен ловиться глазом сразу: в шапке с трубкой,
+   на первом экране — крупно, чтобы с телефона нажимали не думая.
+   ═════════════════════════════════════════════════════════════ */
+.hdr-phone{
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:18px; font-weight:800; letter-spacing:-.01em;
+  text-decoration:none; white-space:nowrap;
+  font-variant-numeric:tabular-nums; transition:color .15s;
+}
+.hdr-phone svg{ color:var(--accent); flex:0 0 auto; }
+.hdr-phone:hover{ color:var(--accent); }
+
+.hero-call{ display:flex; flex-direction:column; gap:6px; margin-top:34px; }
+.hero-call-label{
+  font-size:12px; font-weight:800; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--snow-far);
+}
+.phone-big{
+  display:inline-flex; align-items:center; gap:13px; width:max-content; max-width:100%;
+  font-size:clamp(24px,5vw,40px); font-weight:800; letter-spacing:-.02em; line-height:1.1;
+  text-decoration:none; color:var(--snow); white-space:nowrap;
+  font-variant-numeric:tabular-nums; transition:color .15s;
+}
+.phone-big svg{ color:var(--accent); flex:0 0 auto; }
+.phone-big:hover{ color:var(--accent); }
+.phone-mid{ font-size:clamp(22px,3vw,28px); gap:10px; }
+
+.foot-phone{
+  display:inline-block; margin-top:2px;
+  font-size:18px; font-weight:800; color:var(--snow);
+  text-decoration:none; font-variant-numeric:tabular-nums;
+}
+.foot-phone:hover{ color:var(--accent); }
+
+@media (max-width:860px){
+  .hdr-phone{ font-size:16px; gap:6px; }
+  .hdr-phone svg{ width:15px; height:15px; }
+  .phone-big svg{ width:24px; height:24px; }
+}
+/* совсем узкие экраны: в шапке оставляем только трубку,
+   номер целиком всё равно виден на первом экране */
+@media (max-width:420px){
+  .hdr-phone span{ display:none; }
+  .hdr-phone{ gap:0; padding:6px; }
+  .hdr-phone svg{ width:20px; height:20px; }
+}

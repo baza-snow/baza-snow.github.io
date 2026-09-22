@@ -12,7 +12,9 @@
   // ── контакты в шапке и подвале ──────────────────────────────
   document.querySelectorAll('[data-phone]').forEach(el => {
     if (!B.phone) { el.classList.add('hide'); return; }
-    el.textContent = B.phone;
+    // если внутри есть место под номер — пишем туда, иконку рядом не затираем
+    const slot = el.querySelector('[data-phone-slot]') || el;
+    slot.textContent = B.phone;
     if (el.tagName === 'A') el.href = 'tel:' + (B.phoneTel || B.phone.replace(/[^\d+]/g, ''));
   });
   document.querySelectorAll('[data-hours]').forEach(el => {

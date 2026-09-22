@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=PT+Serif:ital@0;1&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=8">
+<link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
 
@@ -34,7 +34,7 @@
       <a href="index.html#kontakty">Контакты</a>
     </nav>
     <div class="hdr-cta">
-      <a class="hdr-phone" data-phone href="#">&nbsp;</a>
+      <a class="hdr-phone" data-phone href="#" aria-label="Позвонить"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.5 16.9v2.8a1.9 1.9 0 0 1-2.1 1.9 18.6 18.6 0 0 1-8.1-2.9 18.3 18.3 0 0 1-5.6-5.6A18.6 18.6 0 0 1 2.8 5a1.9 1.9 0 0 1 1.9-2.1h2.8a1.9 1.9 0 0 1 1.9 1.6c.1 1 .4 1.9.7 2.8a1.9 1.9 0 0 1-.4 2L8.5 10.5a15 15 0 0 0 5.6 5.6l1.2-1.2a1.9 1.9 0 0 1 2-.4c.9.3 1.8.6 2.8.7a1.9 1.9 0 0 1 1.6 1.9z"/></svg><span data-phone-slot>&nbsp;</span></a>
       <a class="btn btn-primary btn-sm" data-avito data-avito-text="Заявка на подбор" href="#zayavka-podbor">Каталог на Авито</a>
       <button class="burger" aria-label="Меню" aria-expanded="false">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
@@ -61,6 +61,10 @@
     <div class="hero-btns">
       <a class="btn btn-primary" data-avito data-avito-text="Оставить заявку на подбор" href="#zayavka-podbor">Открыть каталог на Авито</a>
       <a class="btn btn-ghost" href="#kak-podbiraem">Как мы подбираем</a>
+    </div>
+    <div class="hero-call">
+      <span class="hero-call-label">Или просто позвоните</span>
+      <a class="phone-big" data-phone href="#"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.5 16.9v2.8a1.9 1.9 0 0 1-2.1 1.9 18.6 18.6 0 0 1-8.1-2.9 18.3 18.3 0 0 1-5.6-5.6A18.6 18.6 0 0 1 2.8 5a1.9 1.9 0 0 1 1.9-2.1h2.8a1.9 1.9 0 0 1 1.9 1.6c.1 1 .4 1.9.7 2.8a1.9 1.9 0 0 1-.4 2L8.5 10.5a15 15 0 0 0 5.6 5.6l1.2-1.2a1.9 1.9 0 0 1 2-.4c.9.3 1.8.6 2.8.7a1.9 1.9 0 0 1 1.6 1.9z"/></svg><span data-phone-slot>&nbsp;</span></a>
     </div>
 
     <div class="trust">
@@ -215,6 +219,7 @@
     <div>
       <img src="logo/baza-logo.png" alt="БАЗА">
       <p>Сноуборды, сервис, прокат<br>Екатеринбург, Широкий переулок, 6</p>
+      <p><a class="foot-phone" data-phone href="#"><span data-phone-slot>&nbsp;</span></a></p>
     </div>
     <nav class="foot-nav">
       <a href="index.html">Главная</a>
@@ -233,9 +238,9 @@
   </div>
 </footer>
 
-<script src="config.js?v=8"></script>
-<script src="app.js?v=8"></script>
-<script src="forms.js?v=8"></script>
-<script src="mountains.js?v=8"></script>
+<script src="config.js?v=9"></script>
+<script src="app.js?v=9"></script>
+<script src="forms.js?v=9"></script>
+<script src="mountains.js?v=9"></script>
 </body>
 </html>
