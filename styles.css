@@ -663,3 +663,52 @@ section{ padding:78px 0; }
   .hdr-phone{ gap:0; padding:6px; }
   .hdr-phone svg{ width:20px; height:20px; }
 }
+
+/* ═════════════════════════════════════════════════════════════
+   ТРИ ДЕЙСТВИЯ НА ПЕРВОМ ЭКРАНЕ
+   Раньше это были тонкие контуры поверх фотографии — на снимке
+   они терялись. Теперь плотные карточки с иконкой и пояснением:
+   видно, куда жать, ещё до чтения текста.
+   ═════════════════════════════════════════════════════════════ */
+.hero-acts{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+  margin-top:34px; max-width:960px;
+}
+.hero-act{
+  display:flex; align-items:center; gap:14px;
+  padding:16px 16px 16px 15px; border-radius:13px;
+  text-decoration:none; color:var(--snow);
+  background:rgba(18,22,26,.92);
+  border:1px solid var(--line);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  transition:border-color .16s, transform .16s, background .16s;
+}
+.hero-act:hover{ border-color:var(--snow-far); transform:translateY(-2px); }
+.hero-act:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+
+.hero-act-ico{
+  flex:0 0 auto; width:42px; height:42px; border-radius:11px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(232,85,42,.14); color:var(--accent);
+}
+.hero-act-txt{ flex:1; min-width:0; }
+.hero-act-txt b{ display:block; font-size:15.5px; font-weight:800; line-height:1.25; }
+.hero-act-txt i{ display:block; font-style:normal; font-size:13px; color:var(--snow-dim); margin-top:3px; line-height:1.3; }
+.hero-act-go{ flex:0 0 auto; color:var(--snow-far); transition:transform .16s, color .16s; }
+.hero-act:hover .hero-act-go{ color:var(--snow); transform:translateX(3px); }
+
+/* главное действие — оценка ремонта по фото */
+.hero-act.is-key{ background:var(--accent); border-color:var(--accent); }
+.hero-act.is-key:hover{ background:var(--accent-2); border-color:var(--accent-2); }
+.hero-act.is-key .hero-act-ico{ background:rgba(255,255,255,.18); color:#fff; }
+.hero-act.is-key .hero-act-txt i{ color:rgba(255,255,255,.82); }
+.hero-act.is-key .hero-act-go{ color:rgba(255,255,255,.85); }
+
+@media (max-width:960px){
+  .hero-acts{ grid-template-columns:1fr; gap:10px; max-width:520px; }
+}
+@media (max-width:420px){
+  .hero-act{ padding:14px; gap:12px; }
+  .hero-act-ico{ width:38px; height:38px; }
+  .hero-act-txt b{ font-size:15px; }
+}
