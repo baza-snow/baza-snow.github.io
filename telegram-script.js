@@ -3,7 +3,7 @@
 //
 //  Куда вставлять:
 //    script.google.com → «Новый проект» → выделить весь код в редакторе
-//    и заменить на этот → вписать TOKEN и CHAT_ID ниже → «Развернуть»
+//    и заменить на этот → вписать TOKEN и CHAT_IDS ниже → «Развернуть»
 //    → «Новое развёртывание» → тип «Веб-приложение»
 //    → «Запуск от имени: я», «Доступ: все» → скопировать ссылку вида
 //      https://script.google.com/macros/s/AKfy.../exec
@@ -17,10 +17,16 @@
 //  Пошагово — в README.md.
 // ─────────────────────────────────────────────────────────────
 
-const TOKEN   = 'СЮДА_ТОКЕН_БОТА';   // выдаёт @BotFather
-const CHAT_ID = 'СЮДА_ID_ЧАТА';      // ваш личный id (просто цифры, например 123456789)
-                                     // или id группы — тогда с минусом: -100...
-                                     // Как узнать — в README, раздел про заявки.
+const TOKEN    = 'СЮДА_ТОКЕН_БОТА';  // выдаёт @BotFather
+const CHAT_IDS = ['СЮДА_ID_ЧАТА_1', 'СЮДА_ID_ЧАТА_2'];
+                                     // список получателей: личный id владельца,
+                                     // id Джона Вудстока (@zhzhoni) и т.д.
+                                     // Каждый — просто цифры (например 123456789)
+                                     // или id группы с минусом (-100...).
+                                     // Как узнать свой id — в README, раздел про заявки.
+                                     // Как узнать чужой — человек должен сначала
+                                     // написать боту @Baza_ekb_bot что угодно,
+                                     // тогда его id появится в getUpdates.
 
 function doPost(e) {
   try {
@@ -53,55 +59,61 @@ function doPost(e) {
       '\n📄 ' + esc(d.page || '') +
       '\n<a href="' + esc(d.url) + '">открыть страницу</a>';
 
-    // 1. сама заявка
-    const res = UrlFetchApp.fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage', {
-      method: 'post',
-      contentType: 'application/json',
-      muteHttpExceptions: true,
-      payload: JSON.stringify({
-        chat_id: CHAT_ID,
-        text: text,
-        parse_mode: 'HTML',
-        disable_web_page_preview: true
-      })
-    });
+    // рассылаем каждому получателю из CHAT_IDS независимо —
+    // у каждого свой message_id, поэтому фото отвечают в свой чат
+    for (let c = 0; c < CHAT_IDS.length; c++) {
+      const chatId = CHAT_IDS[c];
 
-    // id заявки, чтобы фото прицепились к ней ответом, а не висели отдельно
-    let replyTo = null;
-    try {
-      const parsed = JSON.parse(res.getContentText());
-      if (parsed.ok && parsed.result) replyTo = parsed.result.message_id;
-    } catch (ignore) {}
+      // 1. сама заявка
+      const res = UrlFetchApp.fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage', {
+        method: 'post',
+        contentType: 'application/json',
+        muteHttpExceptions: true,
+        payload: JSON.stringify({
+          chat_id: chatId,
+          text: text,
+          parse_mode: 'HTML',
+          disable_web_page_preview: true
+        })
+      });
 
-    // 2. фото повреждения, по одному
-    for (let i = 0; i < photos.length; i++) {
+      // id заявки, чтобы фото прицепились к ней ответом, а не висели отдельно
+      let replyTo = null;
       try {
-        const bytes = Utilities.base64Decode(photos[i].data);
-        const blob  = Utilities.newBlob(bytes, 'image/jpeg', photos[i].name || ('foto-' + (i + 1) + '.jpg'));
-        const form  = {
-          chat_id: String(CHAT_ID),
-          caption: 'Фото ' + (i + 1) + ' из ' + photos.length +
-                   (d.phone ? ' · заявка ' + d.phone : ''),
-          photo: blob
-        };
-        if (replyTo) form.reply_to_message_id = String(replyTo);
+        const parsed = JSON.parse(res.getContentText());
+        if (parsed.ok && parsed.result) replyTo = parsed.result.message_id;
+      } catch (ignore) {}
 
-        UrlFetchApp.fetch('https://api.telegram.org/bot' + TOKEN + '/sendPhoto', {
-          method: 'post',
-          payload: form,                 // multipart — Apps Script соберёт сам
-          muteHttpExceptions: true
-        });
-      } catch (errPhoto) {
-        UrlFetchApp.fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage', {
-          method: 'post',
-          contentType: 'application/json',
-          muteHttpExceptions: true,
-          payload: JSON.stringify({
-            chat_id: CHAT_ID,
-            text: '⚠️ Фото ' + (i + 1) + ' не отправилось: ' + errPhoto,
-            reply_to_message_id: replyTo
-          })
-        });
+      // 2. фото повреждения, по одному
+      for (let i = 0; i < photos.length; i++) {
+        try {
+          const bytes = Utilities.base64Decode(photos[i].data);
+          const blob  = Utilities.newBlob(bytes, 'image/jpeg', photos[i].name || ('foto-' + (i + 1) + '.jpg'));
+          const form  = {
+            chat_id: String(chatId),
+            caption: 'Фото ' + (i + 1) + ' из ' + photos.length +
+                     (d.phone ? ' · заявка ' + d.phone : ''),
+            photo: blob
+          };
+          if (replyTo) form.reply_to_message_id = String(replyTo);
+
+          UrlFetchApp.fetch('https://api.telegram.org/bot' + TOKEN + '/sendPhoto', {
+            method: 'post',
+            payload: form,                 // multipart — Apps Script соберёт сам
+            muteHttpExceptions: true
+          });
+        } catch (errPhoto) {
+          UrlFetchApp.fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage', {
+            method: 'post',
+            contentType: 'application/json',
+            muteHttpExceptions: true,
+            payload: JSON.stringify({
+              chat_id: chatId,
+              text: '⚠️ Фото ' + (i + 1) + ' не отправилось: ' + errPhoto,
+              reply_to_message_id: replyTo
+            })
+          });
+        }
       }
     }
 
@@ -117,11 +129,13 @@ function esc(s) {
 }
 
 // Разовая проверка. Запустите эту функцию в редакторе (кнопка «Выполнить») —
-// в группе должно появиться сообщение «проверка связи».
+// каждому из CHAT_IDS должно прийти сообщение «проверка связи».
 function test() {
-  UrlFetchApp.fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage', {
-    method: 'post',
-    contentType: 'application/json',
-    payload: JSON.stringify({ chat_id: CHAT_ID, text: 'проверка связи — БАЗА' })
-  });
+  for (let i = 0; i < CHAT_IDS.length; i++) {
+    UrlFetchApp.fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage', {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({ chat_id: CHAT_IDS[i], text: 'проверка связи — БАЗА' })
+    });
+  }
 }
