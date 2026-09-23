@@ -24,7 +24,7 @@ window.BAZA = {
 
   // Каталог на Авито. Вставьте ссылку на профиль магазина —
   // кнопки «Смотреть каталог» ведут сюда.
-  avito:     "",           // например "https://www.avito.ru/user/xxxxx/profile"
+  avito:     "https://www.avito.ru/brands/ff199aa528d1463833af036e406b60e3",
   avitoYears: "с 2016 года",
   avitoRating: "5,0",
   avitoReviews: "85",
@@ -151,19 +151,19 @@ window.CATALOG = [
   { name: "Сноуборд-комплекты",
     text: "Доска + крепления + ботинки, собранные по совместимости и балансу. Для новичков — прощающие модели, для опытных — карвинг и фрирайд.",
     price: "19 000 – 47 000 ₽",
-    photo: "photos/shop-boards-1.jpg" },
+    photo: "photos/shop2-komplekty.jpg" },
   { name: "Сноуборды",
     text: "Ростовки от детских 130 до 160+. Burton, Jones, Nitro, Volume, Arbor, Rossignol и другие.",
     price: "9 500 – 18 000 ₽",
-    photo: "photos/shop-stand.jpg" },
+    photo: "photos/shop2-rack-1.jpg" },
   { name: "Крепления",
     text: "Разные размеры и жёсткости, подбираем под доску и ботинок.",
     price: "8 500 – 8 700 ₽",
-    photo: "photos/shop-krepy.jpg" },
+    photo: "photos/shop2-krepy.jpg" },
   { name: "Ботинки",
     text: "Целая стена ботинок — сноубордические и горнолыжные, мужские, женские и детские.",
     price: "по размеру",
-    photo: "photos/shop-boots-1.jpg" },
+    photo: "photos/shop2-boots-1.jpg" },
   { name: "Горные лыжи",
     text: "Комплекты и лыжи отдельно, с креплениями и без.",
     price: "по модели",
