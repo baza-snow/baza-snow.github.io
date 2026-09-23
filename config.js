@@ -33,10 +33,9 @@ window.BAZA = {
   yandexReviews: "43",
 
   // Приёмник заявок: адрес веб-приложения Google Apps Script,
-  // которое пересылает заявку в Telegram (в личный чат @and686).
-  // Пока пусто — формы НЕ отправляются, человек видит телефон.
-  // Как получить ссылку — README.md, раздел «Как подключить заявки».
-  formEndpoint: ""
+  // которое пересылает заявку в Telegram, в личный чат @and686.
+  // Подключено 23.09.2026. Если менять — см. README.md.
+  formEndpoint: "https://script.google.com/macros/s/AKfycbxIDJgiEP2jl9-g-vgDEwHG5Ny2Fzp7BxokvG7scIx0nTqZwybvgiejMTtogqhHvDUv/exec"
 };
 
 // ── ПРОКАТ ────────────────────────────────────────────────────
