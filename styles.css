@@ -194,11 +194,13 @@ section{ padding:78px 0; }
 .split{ display:grid; grid-template-columns:1fr 1fr; gap:52px; align-items:center; }
 .split-media{ border-radius:var(--radius); overflow:hidden; border:1px solid var(--line); }
 .split-media img{ width:100%; aspect-ratio:4/3; object-fit:cover; }
+/* для вертикальных снимков — кадр под них, иначе обрежет половину */
+.split-media.is-tall img{ aspect-ratio:4/5; }
 
 /* ── каталог ───────────────────────────────────────────────── */
 .cat-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
 .cat{ background:var(--rock-2); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column; }
-.cat-img{ aspect-ratio:16/11; overflow:hidden; background:var(--rock-3); }
+.cat-img{ aspect-ratio:4/5; overflow:hidden; background:var(--rock-3); }
 .cat-img img{ width:100%; height:100%; object-fit:cover; opacity:.9; }
 .cat-txt{ padding:20px; flex:1; display:flex; flex-direction:column; }
 .cat-txt p{ color:var(--snow-dim); font-size:14.5px; flex:1; }
