@@ -651,6 +651,15 @@ section{ padding:78px 0; }
 }
 .foot-phone:hover{ color:var(--accent); }
 
+/* мессенджеры — шапка, контакты, подвал */
+.hdr-msg{ display:inline-flex; align-items:center; color:var(--accent); }
+.hdr-msg:hover{ opacity:.75; }
+.msg-link{ display:inline-flex !important; align-items:center; gap:8px; }
+.msg-link svg{ color:var(--accent); flex:0 0 auto; }
+.foot-msg{ display:flex; gap:14px; margin-top:10px; }
+.foot-msg a{ display:inline-flex; color:var(--snow-dim); }
+.foot-msg a:hover{ color:var(--accent); }
+
 @media (max-width:860px){
   .hdr-phone{ font-size:16px; gap:6px; }
   .hdr-phone svg{ width:15px; height:15px; }
