@@ -27,9 +27,9 @@
     --accent-dim:#5a3320;
     --branch:#4fa3e0;
     --branch-dim:#1c3547;
-    --todo:#5c6a80;
+    --todo:#63c68a;
     --progress:#e8b84b;
-    --done:#63c68a;
+    --done:#e3654f;
     --danger:#e3654f;
     --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
   }
@@ -139,7 +139,6 @@
   }
   .node[data-status="progress"] .dot{background:var(--progress);}
   .node[data-status="done"] .dot{background:var(--done);}
-  .node.done{opacity:.62;}
 
   .edit-btn{
     position:absolute;
@@ -358,9 +357,9 @@
 <div class="topbar">
   <div class="brand">Компас<small>карта цели · @bolshakoff.life</small></div>
   <div class="legend">
-    <span><i class="dot" style="background:var(--todo)"></i>надо</span>
+    <span><i class="dot" style="background:var(--todo)"></i>открыта</span>
     <span><i class="dot" style="background:var(--progress)"></i>в деле</span>
-    <span><i class="dot" style="background:var(--done)"></i>готово</span>
+    <span><i class="dot" style="background:var(--done)"></i>закрыта</span>
   </div>
 </div>
 
@@ -443,18 +442,70 @@
     ]
   };
 
+  // Довесок 25.09: остальные проекты — добавляется один раз поверх того,
+  // что уже есть в памяти телефона, ничего существующего не трогает.
+  const SEED_V2 = {
+    nodes: [
+      {id:'zap', kind:'branch', status:'progress', x:-820, y:680, text:'Запчасти — dvigatel-ekb.ru'},
+      {id:'avt', kind:'branch', status:'progress', x:-370, y:680, text:'Авторазбор — Авито, Hyundai'},
+      {id:'sys', kind:'branch', status:'progress', x:90,   y:680, text:'Личная система — деньги и режим'},
+      {id:'mal', kind:'branch', status:'todo',     x:550,  y:680, text:'Курс автомаляра — на паузе'},
+      {id:'per', kind:'branch', status:'todo',     x:950,  y:680, text:'Перекуп авто — отложено до марта 2027'},
+
+      {id:'zap1', kind:'leaf', status:'done',     x:-980, y:900,  text:'Сайт запущен, домен и SSL подключены'},
+      {id:'zap2', kind:'leaf', status:'done',     x:-820, y:900,  text:'1182 позиции, 5722 фото в каталоге'},
+      {id:'zap3', kind:'leaf', status:'progress', x:-660, y:900,  text:'Директ запущен 27.08 — чистим минус-слова'},
+      {id:'zap4', kind:'leaf', status:'todo',     x:-980, y:1040, text:'Проверить WhatsApp Business на номере 025-28-92'},
+      {id:'zap5', kind:'leaf', status:'todo',     x:-820, y:1040, text:'Запустить Авито Рекламу — баннеры готовы'},
+      {id:'zap6', kind:'leaf', status:'todo',     x:-660, y:1040, text:'Перевыпустить токен Telegram-бота'},
+
+      {id:'avt1', kind:'leaf', status:'done',     x:-500, y:900,  text:'Вышел на Авито 17.08 — спец. по Hyundai АКПП/МКПП'},
+      {id:'avt2', kind:'leaf', status:'progress', x:-370, y:900,  text:'Тест 10 дней: 500 ₽/день, считаем обращения'},
+      {id:'avt3', kind:'leaf', status:'todo',     x:-240, y:900,  text:'Добавить каталог поставщика — 1182 позиции, наценка 33%'},
+
+      {id:'sys1', kind:'leaf', status:'progress', x:-20,  y:900,  text:'375 000 ₽ неприкосновенны до ноября'},
+      {id:'sys2', kind:'leaf', status:'progress', x:130,  y:900,  text:'Стоп работы в 20:00'},
+      {id:'sys3', kind:'leaf', status:'todo',     x:280,  y:900,  text:'1 ноября — сверка кассы, пересобрать систему'},
+
+      {id:'mal1', kind:'leaf', status:'done',     x:480,  y:900,  text:'Видео 2,5 ч отснято с мастером'},
+      {id:'mal2', kind:'leaf', status:'todo',     x:620,  y:900,  text:'На паузе с 18.08 — решить, когда возобновлять'},
+
+      {id:'per1', kind:'leaf', status:'done',     x:880,  y:900,  text:'Идея разобрана 18.08 — деньги в машины не идут'},
+      {id:'per2', kind:'leaf', status:'todo',     x:1020, y:900,  text:'Контент про схемы перекупов — 0 ₽, можно снимать уже'}
+    ],
+    edges: [
+      {a:'goal',b:'zap'},{a:'goal',b:'avt'},{a:'goal',b:'sys'},{a:'goal',b:'mal'},{a:'goal',b:'per'},
+      {a:'zap',b:'zap1'},{a:'zap',b:'zap2'},{a:'zap',b:'zap3'},{a:'zap',b:'zap4'},{a:'zap',b:'zap5'},{a:'zap',b:'zap6'},
+      {a:'avt',b:'avt1'},{a:'avt',b:'avt2'},{a:'avt',b:'avt3'},
+      {a:'sys',b:'sys1'},{a:'sys',b:'sys2'},{a:'sys',b:'sys3'},
+      {a:'mal',b:'mal1'},{a:'mal',b:'mal2'},
+      {a:'per',b:'per1'},{a:'per',b:'per2'}
+    ]
+  };
+
+  function applySeedV2(st){
+    if(st.seedVersion >= 2) return st;
+    const known = new Set(st.nodes.map(n => n.id));
+    SEED_V2.nodes.forEach(n => { if(!known.has(n.id)) st.nodes.push(n); });
+    const knownEdge = new Set(st.edges.map(e => e.a+'>'+e.b));
+    SEED_V2.edges.forEach(e => { if(!knownEdge.has(e.a+'>'+e.b)) st.edges.push(e); });
+    st.seedVersion = 2;
+    return st;
+  }
+
   function loadState(){
     try{
       const raw = localStorage.getItem(LSKEY);
-      if(raw) return JSON.parse(raw);
+      if(raw) return applySeedV2(JSON.parse(raw));
     }catch(e){}
-    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    return applySeedV2(JSON.parse(JSON.stringify(DEFAULT_STATE)));
   }
   function saveState(){
     try{ localStorage.setItem(LSKEY, JSON.stringify(state)); }catch(e){}
   }
 
   let state = loadState();
+  saveState();
 
   const boardEl = document.getElementById('board');
   const worldEl = document.getElementById('world');
@@ -789,7 +840,7 @@
 
   document.getElementById('btn-reset').addEventListener('click', ()=>{
     if(confirm('Сбросить карту к исходной? Все свои узлы и связи удалятся.')){
-      state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      state = applySeedV2(JSON.parse(JSON.stringify(DEFAULT_STATE)));
       saveState();
       render();
       fitView();
