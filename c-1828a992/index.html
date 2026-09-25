@@ -136,13 +136,26 @@
     width:8px;height:8px;min-width:8px;
     border-radius:50%;
     background:var(--todo);
-    padding:7px;
-    background-clip:content-box;
-    margin:-7px;
   }
   .node[data-status="progress"] .dot{background:var(--progress);}
   .node[data-status="done"] .dot{background:var(--done);}
   .node.done{opacity:.62;}
+
+  .edit-btn{
+    position:absolute;
+    bottom:-9px;right:-9px;
+    width:25px;height:25px;
+    border-radius:50%;
+    background:var(--surface-2);
+    border:2px solid var(--bg);
+    color:var(--text);
+    font-size:12px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    touch-action:none;
+  }
+  .node.goal .edit-btn{background:#e0602e;}
+  .node.branch .edit-btn{background:var(--branch-dim);border-color:var(--bg);}
 
   .del-btn{
     position:absolute;
@@ -518,6 +531,16 @@
       txt.textContent = node.text;
       el.appendChild(txt);
 
+      const editBtn = document.createElement('div');
+      editBtn.className = 'edit-btn';
+      editBtn.textContent = '✏️';
+      editBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); e.preventDefault(); });
+      editBtn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        enterEdit(el, node);
+      });
+      el.appendChild(editBtn);
+
       attachNodeHandlers(el, node);
       nodesEl.appendChild(el);
     });
@@ -543,13 +566,12 @@
   // ---------- node interaction ----------
 
   function attachNodeHandlers(el, node){
-    let startX=0, startY=0, startNX=0, startNY=0, moved=false, pointerId=null, startedOnDot=false;
+    let startX=0, startY=0, startNX=0, startNY=0, moved=false, pointerId=null;
 
     el.addEventListener('pointerdown', (e)=>{
       e.stopPropagation();
       if(el.classList.contains('editing')) return;
       pointerId = e.pointerId;
-      startedOnDot = !!(e.target.classList && e.target.classList.contains('dot'));
       try{ el.setPointerCapture(pointerId); }catch(err){}
       startX = e.clientX; startY = e.clientY;
       startNX = node.x; startNY = node.y;
@@ -578,7 +600,7 @@
       if(moved){
         saveState();
       } else if(!el.classList.contains('editing')){
-        handleTap(el, node, startedOnDot);
+        handleTap(node);
       }
       pointerId = null;
     });
@@ -597,16 +619,13 @@
     render();
   }
 
-  function handleTap(el, node, startedOnDot){
+  function handleTap(node){
     if(connectMode){
       handleConnectTap(node.id);
       return;
     }
-    if(startedOnDot && node.kind !== 'goal'){
-      cycleStatus(node);
-      return;
-    }
-    enterEdit(el, node);
+    if(node.kind === 'goal') return;
+    cycleStatus(node);
   }
 
   function handleConnectTap(id){
@@ -630,7 +649,10 @@
   }
 
   function enterEdit(el, node){
+    if(el.classList.contains('editing')) return;
     el.classList.add('editing');
+    const editBtn = el.querySelector('.edit-btn');
+    if(editBtn) editBtn.style.display = 'none';
     const txt = el.querySelector('.txt');
     txt.contentEditable = 'true';
     txt.focus();
