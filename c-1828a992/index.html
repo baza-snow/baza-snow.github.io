@@ -259,9 +259,78 @@
     .legend{display:none;}
     .toolbar button{padding:11px 12px;font-size:12.5px;}
   }
+
+  #lock{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    background:var(--bg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    gap:16px;
+    padding:24px;
+    text-align:center;
+  }
+  #lock.hidden{display:none;}
+  #lock .glyph{font-size:34px;}
+  #lock h1{
+    margin:0;
+    font-size:16px;
+    font-weight:700;
+    color:var(--muted);
+    font-family:'IBM Plex Mono',monospace;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+  }
+  #lock form{
+    display:flex;
+    gap:8px;
+    margin-top:6px;
+  }
+  #lock input{
+    background:var(--surface);
+    border:1.5px solid var(--border);
+    border-radius:12px;
+    padding:13px 16px;
+    color:var(--text);
+    font-size:16px;
+    width:180px;
+    text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+    letter-spacing:.08em;
+  }
+  #lock input:focus{outline:none;border-color:var(--accent);}
+  #lock button{
+    background:var(--accent);
+    border:none;
+    color:#1a0d06;
+    font-weight:700;
+    border-radius:12px;
+    padding:0 20px;
+    font-size:15px;
+    cursor:pointer;
+  }
+  #lock .err{
+    color:var(--danger);
+    font-size:12.5px;
+    font-family:'IBM Plex Mono',monospace;
+    min-height:16px;
+  }
 </style>
 </head>
 <body>
+
+<div id="lock">
+  <div class="glyph">🧭</div>
+  <h1>Доступ только для Андрея</h1>
+  <form id="lock-form" autocomplete="off">
+    <input type="password" id="lock-input" placeholder="пароль" inputmode="text">
+    <button type="submit">Войти</button>
+  </form>
+  <div class="err" id="lock-err"></div>
+</div>
 
 <div id="board">
   <div id="world">
@@ -291,6 +360,45 @@
 
 <script>
 (function(){
+  // Замена пароля: впиши новую фразу, посчитай sha256 (в терминале: printf 'фраза' | shasum -a 256)
+  // и вставь хэш сюда вместо текущего.
+  const LOCK_HASH = 'c2297c19063da3a9aa43995ae9b48ea9e7ac29fb5b1431da8406ee4fc5848877';
+  const LOCK_KEY = 'kompas-unlocked-v1';
+
+  async function sha256(text){
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  const lockEl = document.getElementById('lock');
+  const lockForm = document.getElementById('lock-form');
+  const lockInput = document.getElementById('lock-input');
+  const lockErr = document.getElementById('lock-err');
+
+  function unlock(){
+    lockEl.classList.add('hidden');
+    try{ localStorage.setItem(LOCK_KEY, '1'); }catch(e){}
+  }
+
+  let alreadyUnlocked = false;
+  try{ alreadyUnlocked = localStorage.getItem(LOCK_KEY) === '1'; }catch(e){}
+
+  if(alreadyUnlocked){
+    unlock();
+  } else {
+    lockForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const hash = await sha256(lockInput.value.trim());
+      if(hash === LOCK_HASH){
+        unlock();
+      } else {
+        lockErr.textContent = 'Неверно, попробуй ещё';
+        lockInput.value = '';
+        lockInput.focus();
+      }
+    });
+  }
+
   const LSKEY = 'kompas-bolshakova-v1';
 
   const DEFAULT_STATE = {
