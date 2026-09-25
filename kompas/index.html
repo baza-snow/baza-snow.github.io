@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Компас Большакова</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0d12;
+    --bg-dot:#161d26;
+    --surface:#131a22;
+    --surface-2:#1a232e;
+    --border:#283040;
+    --border-soft:#1f2733;
+    --text:#eef2f6;
+    --muted:#8996a8;
+    --accent:#ff7a45;
+    --accent-dim:#5a3320;
+    --branch:#4fa3e0;
+    --branch-dim:#1c3547;
+    --todo:#5c6a80;
+    --progress:#e8b84b;
+    --done:#63c68a;
+    --danger:#e3654f;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Sora',system-ui,-apple-system,'Segoe UI',sans-serif;
+    overflow:hidden;
+    -webkit-user-select:none;
+    user-select:none;
+  }
+
+  #board{
+    position:fixed;
+    inset:0;
+    background:
+      radial-gradient(circle at 1px 1px, var(--bg-dot) 1.4px, transparent 1.4px);
+    background-size:28px 28px;
+    touch-action:none;
+    overflow:hidden;
+    cursor:grab;
+  }
+  #board.panning{cursor:grabbing;}
+
+  #world{
+    position:absolute;
+    left:0;top:0;
+    transform-origin:0 0;
+    will-change:transform;
+  }
+
+  svg#edges{
+    position:absolute;
+    left:0;top:0;
+    width:1px;height:1px;
+    overflow:visible;
+    pointer-events:none;
+  }
+  svg#edges path{
+    fill:none;
+    stroke:var(--border);
+    stroke-width:2;
+    stroke-linecap:round;
+  }
+
+  .node{
+    position:absolute;
+    left:0;top:0;
+    transform:translate(-50%,-50%);
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    max-width:220px;
+    padding:10px 15px;
+    border-radius:999px;
+    background:var(--surface);
+    border:1.5px solid var(--border);
+    color:var(--text);
+    font-size:13.5px;
+    font-weight:500;
+    line-height:1.3;
+    white-space:normal;
+    box-shadow:var(--shadow);
+    touch-action:none;
+    cursor:grab;
+  }
+  .node.editing{
+    cursor:text;
+    outline:none;
+    border-color:var(--accent);
+  }
+  .node .txt{outline:none;}
+  .node.dragging{cursor:grabbing;box-shadow:0 16px 40px -14px rgba(0,0,0,.75);}
+
+  .node.goal{
+    background:linear-gradient(155deg,var(--accent),#e0602e);
+    border-color:transparent;
+    color:#1a0d06;
+    font-weight:800;
+    font-size:16px;
+    padding:16px 24px;
+    max-width:260px;
+    text-align:center;
+    justify-content:center;
+  }
+  .node.branch{
+    border-color:var(--branch);
+    background:linear-gradient(155deg,var(--branch-dim),var(--surface) 70%);
+    font-weight:700;
+    font-size:14.5px;
+    padding:12px 18px;
+  }
+  .node.leaf{font-weight:500;}
+
+  .node.selected{
+    box-shadow:0 0 0 3px var(--branch), var(--shadow);
+  }
+
+  .dot{
+    width:8px;height:8px;min-width:8px;
+    border-radius:50%;
+    background:var(--todo);
+  }
+  .node[data-status="progress"] .dot{background:var(--progress);}
+  .node[data-status="done"] .dot{background:var(--done);}
+  .node.done{opacity:.62;}
+
+  .del-btn{
+    position:absolute;
+    top:-9px;right:-9px;
+    width:24px;height:24px;
+    border-radius:50%;
+    background:var(--danger);
+    color:#2a0805;
+    border:2px solid var(--bg);
+    font-size:13px;
+    font-weight:800;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    touch-action:none;
+  }
+
+  /* chrome */
+  .topbar{
+    position:fixed;
+    top:14px;left:14px;right:14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    pointer-events:none;
+    z-index:5;
+  }
+  .brand{
+    font-weight:800;
+    font-size:15px;
+    letter-spacing:-.01em;
+  }
+  .brand small{
+    display:block;
+    margin-top:2px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    font-weight:500;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .legend{
+    display:flex;
+    gap:12px;
+    background:rgba(19,26,34,.85);
+    backdrop-filter:blur(6px);
+    border:1px solid var(--border-soft);
+    border-radius:10px;
+    padding:7px 11px;
+    pointer-events:auto;
+  }
+  .legend span{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  .legend .dot{min-width:7px;width:7px;height:7px;}
+
+  .hint{
+    position:fixed;
+    top:64px;left:50%;
+    transform:translateX(-50%);
+    background:rgba(79,163,224,.15);
+    border:1px solid var(--branch);
+    color:#cfe8ff;
+    font-size:12.5px;
+    font-family:'IBM Plex Mono',monospace;
+    padding:7px 14px;
+    border-radius:999px;
+    z-index:6;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  .hint.show{opacity:1;}
+
+  .toolbar{
+    position:fixed;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    gap:8px;
+    background:rgba(19,26,34,.92);
+    backdrop-filter:blur(10px);
+    border:1px solid var(--border-soft);
+    border-radius:999px;
+    padding:6px;
+    box-shadow:var(--shadow);
+    z-index:5;
+  }
+  .toolbar button{
+    appearance:none;
+    border:none;
+    background:transparent;
+    color:var(--text);
+    font-family:'Sora',sans-serif;
+    font-size:13px;
+    font-weight:600;
+    padding:11px 16px;
+    border-radius:999px;
+    cursor:pointer;
+    white-space:nowrap;
+    min-height:44px;
+  }
+  .toolbar button:active{background:var(--surface-2);}
+  .toolbar button.primary{background:var(--accent);color:#1a0d06;}
+  .toolbar button.active{background:var(--branch);color:#04101a;}
+  .toolbar .sep{width:1px;background:var(--border);margin:6px 2px;}
+
+  @media (max-width:520px){
+    .legend{display:none;}
+    .toolbar button{padding:11px 12px;font-size:12.5px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="board">
+  <div id="world">
+    <svg id="edges"></svg>
+    <div id="nodes"></div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="brand">Компас<small>карта цели · @bolshakoff.life</small></div>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--todo)"></i>надо</span>
+    <span><i class="dot" style="background:var(--progress)"></i>в деле</span>
+    <span><i class="dot" style="background:var(--done)"></i>готово</span>
+  </div>
+</div>
+
+<div class="hint" id="hint"></div>
+
+<div class="toolbar">
+  <button class="primary" id="btn-add">+ Узел</button>
+  <button id="btn-link">Связать</button>
+  <div class="sep"></div>
+  <button id="btn-fit">По размеру</button>
+  <button id="btn-reset">Сброс</button>
+</div>
+
+<script>
+(function(){
+  const LSKEY = 'kompas-bolshakova-v1';
+
+  const DEFAULT_STATE = {
+    nodes: [
+      {id:'goal', kind:'goal', status:null, x:0, y:-280, text:'Быть крутым, собой — личный бренд @bolshakoff.life'},
+
+      {id:'brand', kind:'branch', status:'progress', x:-380, y:-20, text:'Личный бренд — главный трек'},
+      {id:'baza',  kind:'branch', status:'progress', x:380,  y:-20, text:'БАЗА — топливо'},
+
+      {id:'b1', kind:'leaf', status:'done',     x:-700, y:240, text:'4 Reels опубликовано, данные собраны'},
+      {id:'b2', kind:'leaf', status:'done',     x:-520, y:260, text:'Рычаг: подписка за участие ×10 к конверсии'},
+      {id:'b3', kind:'leaf', status:'progress', x:-340, y:260, text:'Закрыть аукцион 3.10 + ответить @arsvek'},
+      {id:'b4', kind:'leaf', status:'todo',     x:-160, y:250, text:'Повторить рычаг в новом формате'},
+      {id:'b5', kind:'leaf', status:'todo',     x:-380, y:400, text:'Монолог из заметки 5 сентября'},
+
+      {id:'z1', kind:'leaf', status:'progress', x:60,  y:250, text:'Решение по кредитке — сегодня'},
+      {id:'z2', kind:'leaf', status:'todo',     x:240, y:260, text:'Таблица остатков склада'},
+      {id:'z3', kind:'leaf', status:'todo',     x:420, y:260, text:'Выкладка объявлений пулами'},
+      {id:'z4', kind:'leaf', status:'todo',     x:600, y:250, text:'График 5/2 с 1 октября'},
+      {id:'z5', kind:'leaf', status:'todo',     x:380, y:400, text:'Закуп 425 000 ₽ — 1 ноября'}
+    ],
+    edges: [
+      {a:'goal',b:'brand'},{a:'goal',b:'baza'},
+      {a:'brand',b:'b1'},{a:'brand',b:'b2'},{a:'brand',b:'b3'},{a:'brand',b:'b4'},{a:'brand',b:'b5'},
+      {a:'baza',b:'z1'},{a:'baza',b:'z2'},{a:'baza',b:'z3'},{a:'baza',b:'z4'},{a:'baza',b:'z5'}
+    ]
+  };
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(LSKEY);
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+  }
+  function saveState(){
+    try{ localStorage.setItem(LSKEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  let state = loadState();
+
+  const boardEl = document.getElementById('board');
+  const worldEl = document.getElementById('world');
+  const nodesEl = document.getElementById('nodes');
+  const edgesSvg = document.getElementById('edges');
+  const hintEl = document.getElementById('hint');
+
+  let panX = 0, panY = 0, zoom = 1;
+  function applyTransform(){
+    worldEl.style.transform = `translate(${panX}px,${panY}px) scale(${zoom})`;
+  }
+
+  function boardRect(){ return boardEl.getBoundingClientRect(); }
+  function screenToWorld(sx, sy){
+    const r = boardRect();
+    return { x: (sx - r.left - panX) / zoom, y: (sy - r.top - panY) / zoom };
+  }
+
+  function showHint(text, ms){
+    hintEl.textContent = text;
+    hintEl.classList.add('show');
+    if(ms){ clearTimeout(showHint._t); showHint._t = setTimeout(()=>hintEl.classList.remove('show'), ms); }
+  }
+  function hideHint(){ hintEl.classList.remove('show'); }
+
+  function fitView(){
+    const ns = state.nodes;
+    if(!ns.length) return;
+    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+    ns.forEach(n=>{
+      minX=Math.min(minX,n.x-120); maxX=Math.max(maxX,n.x+120);
+      minY=Math.min(minY,n.y-60);  maxY=Math.max(maxY,n.y+60);
+    });
+    const r = boardRect();
+    const w = maxX-minX, h = maxY-minY;
+    const z = Math.min(r.width/w, r.height/h, 1.3);
+    zoom = Math.max(z, 0.35);
+    panX = r.width/2 - (minX+maxX)/2*zoom;
+    panY = r.height/2 - (minY+maxY)/2*zoom;
+    applyTransform();
+  }
+
+  // ---------- rendering ----------
+
+  function statusOf(node){ return node.status || 'todo'; }
+
+  function nodeClass(node){
+    let c = 'node ' + node.kind;
+    if(node.kind !== 'goal' && statusOf(node) === 'done') c += ' done';
+    return c;
+  }
+
+  let connectMode = false;
+  let connectFirst = null;
+
+  function render(){
+    nodesEl.innerHTML = '';
+    state.nodes.forEach(node => {
+      const el = document.createElement('div');
+      el.className = nodeClass(node);
+      el.dataset.id = node.id;
+      if(node.kind !== 'goal') el.setAttribute('data-status', statusOf(node));
+      el.style.left = node.x + 'px';
+      el.style.top = node.y + 'px';
+      if(connectMode && connectFirst === node.id) el.classList.add('selected');
+
+      if(node.kind !== 'goal'){
+        const dot = document.createElement('i');
+        dot.className = 'dot';
+        el.appendChild(dot);
+      }
+      const txt = document.createElement('span');
+      txt.className = 'txt';
+      txt.textContent = node.text;
+      el.appendChild(txt);
+
+      attachNodeHandlers(el, node);
+      nodesEl.appendChild(el);
+    });
+    redrawEdges();
+  }
+
+  function redrawEdges(){
+    const byId = {};
+    state.nodes.forEach(n=>byId[n.id]=n);
+    let html = '';
+    state.edges.forEach(e=>{
+      const a = byId[e.a], b = byId[e.b];
+      if(!a || !b) return;
+      const mx = (a.x+b.x)/2, my=(a.y+b.y)/2;
+      const dx = b.x-a.x, dy = b.y-a.y;
+      const bow = 0.12;
+      const cx = mx - dy*bow, cy = my + dx*bow;
+      html += `<path d="M ${a.x} ${a.y} Q ${cx} ${cy} ${b.x} ${b.y}"/>`;
+    });
+    edgesSvg.innerHTML = html;
+  }
+
+  // ---------- node interaction ----------
+
+  function attachNodeHandlers(el, node){
+    let startX=0, startY=0, startNX=0, startNY=0, moved=false, longPressTimer=null, pointerId=null;
+
+    el.addEventListener('pointerdown', (e)=>{
+      e.stopPropagation();
+      if(el.classList.contains('editing')) return;
+      pointerId = e.pointerId;
+      el.setPointerCapture(pointerId);
+      startX = e.clientX; startY = e.clientY;
+      startNX = node.x; startNY = node.y;
+      moved = false;
+      el.classList.add('dragging');
+
+      longPressTimer = setTimeout(()=>{
+        if(!moved){
+          el.classList.remove('dragging');
+          enterEdit(el, node);
+        }
+      }, 480);
+    });
+
+    el.addEventListener('pointermove', (e)=>{
+      if(e.pointerId !== pointerId) return;
+      const dx = (e.clientX - startX)/zoom;
+      const dy = (e.clientY - startY)/zoom;
+      if(Math.abs(dx) > 4 || Math.abs(dy) > 4){
+        if(!moved){ clearTimeout(longPressTimer); }
+        moved = true;
+        node.x = startNX + dx;
+        node.y = startNY + dy;
+        el.style.left = node.x+'px';
+        el.style.top = node.y+'px';
+        redrawEdges();
+      }
+    });
+
+    el.addEventListener('pointerup', (e)=>{
+      if(e.pointerId !== pointerId) return;
+      clearTimeout(longPressTimer);
+      el.classList.remove('dragging');
+      try{ el.releasePointerCapture(pointerId); }catch(err){}
+      if(moved){
+        saveState();
+      } else if(!el.classList.contains('editing')){
+        handleTap(node);
+      }
+      pointerId = null;
+    });
+
+    el.addEventListener('pointercancel', ()=>{
+      clearTimeout(longPressTimer);
+      el.classList.remove('dragging');
+      pointerId = null;
+    });
+  }
+
+  function handleTap(node){
+    if(connectMode){
+      handleConnectTap(node.id);
+      return;
+    }
+    if(node.kind === 'goal') return;
+    const order = ['todo','progress','done'];
+    const i = order.indexOf(statusOf(node));
+    node.status = order[(i+1) % order.length];
+    saveState();
+    render();
+  }
+
+  function handleConnectTap(id){
+    if(!connectFirst){
+      connectFirst = id;
+      showHint('Теперь выбери второй узел');
+      render();
+      return;
+    }
+    if(id !== connectFirst){
+      const exists = state.edges.some(e =>
+        (e.a===connectFirst && e.b===id) || (e.a===id && e.b===connectFirst));
+      if(!exists) state.edges.push({a:connectFirst, b:id});
+      saveState();
+    }
+    connectFirst = null;
+    connectMode = false;
+    document.getElementById('btn-link').classList.remove('active');
+    hideHint();
+    render();
+  }
+
+  function enterEdit(el, node){
+    el.classList.add('editing');
+    const txt = el.querySelector('.txt');
+    txt.contentEditable = 'true';
+    txt.focus();
+    const range = document.createRange();
+    range.selectNodeContents(txt);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    let deleting = false;
+
+    const del = document.createElement('div');
+    del.className = 'del-btn';
+    del.textContent = '✕';
+    del.style.display = node.id === 'goal' ? 'none' : 'flex';
+    del.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      deleting = true;
+      state.nodes = state.nodes.filter(n => n.id !== node.id);
+      state.edges = state.edges.filter(ed => ed.a !== node.id && ed.b !== node.id);
+      saveState();
+      render();
+    });
+    el.appendChild(del);
+
+    function commit(){
+      if(deleting) return;
+      const v = txt.textContent.trim();
+      if(!v && node.id !== 'goal'){
+        state.nodes = state.nodes.filter(n => n.id !== node.id);
+        state.edges = state.edges.filter(ed => ed.a !== node.id && ed.b !== node.id);
+      } else if(v){
+        node.text = v;
+      }
+      saveState();
+      render();
+    }
+
+    txt.addEventListener('blur', commit, {once:true});
+    txt.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        txt.blur();
+      }
+    });
+  }
+
+  // ---------- board pan / pinch ----------
+
+  const pointers = new Map();
+  let panState = null;
+  let pinchState = null;
+
+  boardEl.addEventListener('pointerdown', (e)=>{
+    if(e.target.closest('.node')) return;
+    boardEl.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+
+    if(pointers.size === 1){
+      boardEl.classList.add('panning');
+      panState = {startX:e.clientX, startY:e.clientY, originX:panX, originY:panY};
+      pinchState = null;
+    } else if(pointers.size === 2){
+      const pts = [...pointers.values()];
+      const dist = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
+      const midX = (pts[0].x+pts[1].x)/2, midY = (pts[0].y+pts[1].y)/2;
+      const worldMid = screenToWorld(midX, midY);
+      pinchState = {startDist:dist, startZoom:zoom, worldMid};
+      panState = null;
+    }
+  });
+
+  boardEl.addEventListener('pointermove', (e)=>{
+    if(!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+
+    if(pinchState && pointers.size === 2){
+      const pts = [...pointers.values()];
+      const dist = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
+      const midX = (pts[0].x+pts[1].x)/2, midY = (pts[0].y+pts[1].y)/2;
+      zoom = Math.min(2.5, Math.max(0.35, pinchState.startZoom * (dist/pinchState.startDist)));
+      const r = boardRect();
+      panX = (midX - r.left) - pinchState.worldMid.x*zoom;
+      panY = (midY - r.top) - pinchState.worldMid.y*zoom;
+      applyTransform();
+    } else if(panState && pointers.size === 1){
+      panX = panState.originX + (e.clientX - panState.startX);
+      panY = panState.originY + (e.clientY - panState.startY);
+      applyTransform();
+    }
+  });
+
+  function endPointer(e){
+    pointers.delete(e.pointerId);
+    if(pointers.size === 0){
+      boardEl.classList.remove('panning');
+      panState = null; pinchState = null;
+    } else if(pointers.size === 1){
+      const [ [id,p] ] = pointers;
+      panState = {startX:p.x, startY:p.y, originX:panX, originY:panY};
+      pinchState = null;
+    }
+  }
+  boardEl.addEventListener('pointerup', endPointer);
+  boardEl.addEventListener('pointercancel', endPointer);
+
+  // ---------- toolbar ----------
+
+  document.getElementById('btn-add').addEventListener('click', ()=>{
+    const r = boardRect();
+    const pos = screenToWorld(r.left + r.width/2, r.top + r.height/2 + (Math.random()*60-30));
+    const id = 'n' + Date.now();
+    const node = {id, kind:'leaf', status:'todo', x:pos.x, y:pos.y, text:''};
+    state.nodes.push(node);
+    render();
+    requestAnimationFrame(()=>{
+      const el = nodesEl.querySelector(`[data-id="${id}"]`);
+      if(el) enterEdit(el, node);
+    });
+  });
+
+  const btnLink = document.getElementById('btn-link');
+  btnLink.addEventListener('click', ()=>{
+    connectMode = !connectMode;
+    connectFirst = null;
+    btnLink.classList.toggle('active', connectMode);
+    if(connectMode) showHint('Выбери первый узел');
+    else hideHint();
+    render();
+  });
+
+  document.getElementById('btn-fit').addEventListener('click', ()=> fitView());
+
+  document.getElementById('btn-reset').addEventListener('click', ()=>{
+    if(confirm('Сбросить карту к исходной? Все свои узлы и связи удалятся.')){
+      state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      saveState();
+      render();
+      fitView();
+    }
+  });
+
+  window.addEventListener('resize', ()=> fitView());
+
+  render();
+  fitView();
+})();
+</script>
+</body>
+</html>
