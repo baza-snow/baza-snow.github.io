@@ -555,9 +555,20 @@
     ]
   };
 
+  // 25.09 (третий): решил не распыляться — авторазбор, курс маляра, запчасти
+  // и перекуп авто убираются с карты. Остаётся только БАЗА, бренд и личная система.
+  const PRUNE_V4 = [
+    'zap','avt','mal','per',
+    'zap1','zap2','zap3','zap4','zap5','zap6',
+    'avt1','avt2','avt3',
+    'mal1','mal2',
+    'per1','per2'
+  ];
+
   const SEEDS = [
     {version:2, nodes:SEED_V2.nodes, edges:SEED_V2.edges},
-    {version:3, nodes:SEED_V3.nodes, edges:SEED_V3.edges}
+    {version:3, nodes:SEED_V3.nodes, edges:SEED_V3.edges},
+    {version:4, remove:PRUNE_V4}
   ];
 
   function applySeeds(st){
@@ -566,8 +577,13 @@
     const knownEdge = new Set(st.edges.map(e => e.a+'>'+e.b));
     SEEDS.forEach(seed => {
       if(st.seedVersion < seed.version){
-        seed.nodes.forEach(n => { if(!known.has(n.id)){ st.nodes.push(n); known.add(n.id); } });
-        seed.edges.forEach(e => { const k=e.a+'>'+e.b; if(!knownEdge.has(k)){ st.edges.push(e); knownEdge.add(k); } });
+        if(seed.nodes) seed.nodes.forEach(n => { if(!known.has(n.id)){ st.nodes.push(n); known.add(n.id); } });
+        if(seed.edges) seed.edges.forEach(e => { const k=e.a+'>'+e.b; if(!knownEdge.has(k)){ st.edges.push(e); knownEdge.add(k); } });
+        if(seed.remove){
+          const removeSet = new Set(seed.remove);
+          st.nodes = st.nodes.filter(n => !removeSet.has(n.id));
+          st.edges = st.edges.filter(e => !removeSet.has(e.a) && !removeSet.has(e.b));
+        }
         st.seedVersion = seed.version;
       }
     });
