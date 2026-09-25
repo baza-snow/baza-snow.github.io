@@ -136,6 +136,9 @@
     width:8px;height:8px;min-width:8px;
     border-radius:50%;
     background:var(--todo);
+    padding:7px;
+    background-clip:content-box;
+    margin:-7px;
   }
   .node[data-status="progress"] .dot{background:var(--progress);}
   .node[data-status="done"] .dot{background:var(--done);}
@@ -540,24 +543,18 @@
   // ---------- node interaction ----------
 
   function attachNodeHandlers(el, node){
-    let startX=0, startY=0, startNX=0, startNY=0, moved=false, longPressTimer=null, pointerId=null;
+    let startX=0, startY=0, startNX=0, startNY=0, moved=false, pointerId=null, startedOnDot=false;
 
     el.addEventListener('pointerdown', (e)=>{
       e.stopPropagation();
       if(el.classList.contains('editing')) return;
       pointerId = e.pointerId;
+      startedOnDot = !!(e.target.classList && e.target.classList.contains('dot'));
       try{ el.setPointerCapture(pointerId); }catch(err){}
       startX = e.clientX; startY = e.clientY;
       startNX = node.x; startNY = node.y;
       moved = false;
       el.classList.add('dragging');
-
-      longPressTimer = setTimeout(()=>{
-        if(!moved){
-          el.classList.remove('dragging');
-          enterEdit(el, node);
-        }
-      }, 480);
     });
 
     el.addEventListener('pointermove', (e)=>{
@@ -565,7 +562,6 @@
       const dx = (e.clientX - startX)/zoom;
       const dy = (e.clientY - startY)/zoom;
       if(Math.abs(dx) > 4 || Math.abs(dy) > 4){
-        if(!moved){ clearTimeout(longPressTimer); }
         moved = true;
         node.x = startNX + dx;
         node.y = startNY + dy;
@@ -577,35 +573,40 @@
 
     el.addEventListener('pointerup', (e)=>{
       if(e.pointerId !== pointerId) return;
-      clearTimeout(longPressTimer);
       el.classList.remove('dragging');
       try{ el.releasePointerCapture(pointerId); }catch(err){}
       if(moved){
         saveState();
       } else if(!el.classList.contains('editing')){
-        handleTap(node);
+        handleTap(el, node, startedOnDot);
       }
       pointerId = null;
     });
 
     el.addEventListener('pointercancel', ()=>{
-      clearTimeout(longPressTimer);
       el.classList.remove('dragging');
       pointerId = null;
     });
   }
 
-  function handleTap(node){
-    if(connectMode){
-      handleConnectTap(node.id);
-      return;
-    }
-    if(node.kind === 'goal') return;
+  function cycleStatus(node){
     const order = ['todo','progress','done'];
     const i = order.indexOf(statusOf(node));
     node.status = order[(i+1) % order.length];
     saveState();
     render();
+  }
+
+  function handleTap(el, node, startedOnDot){
+    if(connectMode){
+      handleConnectTap(node.id);
+      return;
+    }
+    if(startedOnDot && node.kind !== 'goal'){
+      cycleStatus(node);
+      return;
+    }
+    enterEdit(el, node);
   }
 
   function handleConnectTap(id){
