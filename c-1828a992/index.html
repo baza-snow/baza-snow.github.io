@@ -78,6 +78,36 @@
     stroke-width:2;
     stroke-linecap:round;
   }
+  svg#edges path.edge-hit{
+    stroke:transparent;
+    stroke-width:24;
+    pointer-events:stroke;
+    cursor:pointer;
+  }
+  svg#edges path.edge-line{
+    pointer-events:none;
+  }
+  svg#edges path.edge-line.selected{
+    stroke:var(--danger);
+    stroke-width:3;
+  }
+  svg#edges path#temp-link{
+    stroke:var(--branch);
+    stroke-width:2.5;
+    stroke-dasharray:7 6;
+    pointer-events:none;
+  }
+  .edge-cut{ cursor:pointer; }
+  .edge-cut circle{ fill:var(--danger); }
+  .edge-cut text{
+    fill:#2a0805;
+    font-size:15px;
+    font-weight:800;
+    text-anchor:middle;
+    dominant-baseline:central;
+    font-family:'Sora',sans-serif;
+    pointer-events:none;
+  }
 
   .node{
     position:absolute;
@@ -155,6 +185,26 @@
   }
   .node.goal .edit-btn{background:#e0602e;}
   .node.branch .edit-btn{background:var(--branch-dim);border-color:var(--bg);}
+
+  .port{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    width:22px;height:22px;
+    border-radius:50%;
+    background:var(--surface-2);
+    border:1.5px solid var(--border);
+    color:var(--muted);
+    font-size:14px;
+    font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    touch-action:none;
+    z-index:2;
+  }
+  .port-top{top:-10px;}
+  .port-bottom{bottom:-10px;}
+  .port:active{background:var(--branch);border-color:var(--branch);color:#04101a;}
 
   .del-btn{
     position:absolute;
@@ -349,7 +399,10 @@
 
 <div id="board">
   <div id="world">
-    <svg id="edges"></svg>
+    <svg id="edges">
+      <g id="edge-group"></g>
+      <path id="temp-link" d="" style="display:none;"></path>
+    </svg>
     <div id="nodes"></div>
   </div>
 </div>
@@ -483,22 +536,50 @@
     ]
   };
 
-  function applySeedV2(st){
-    if(st.seedVersion >= 2) return st;
+  // Довесок 25.09 (второй): узел-чекпоинт октября и связи между ветками —
+  // показывают, что одна задача реально тянет другую, а не просто дерево.
+  const SEED_V3 = {
+    nodes: [
+      {id:'z6', kind:'leaf', status:'progress', x:560, y:400, text:'Октябрь — минимум 15 комплектов чистыми'}
+    ],
+    edges: [
+      {a:'baza', b:'z6'},
+      {a:'z2', b:'z6'},
+      {a:'z6', b:'z5'},
+      {a:'z6', b:'sys3'},
+      {a:'z1', b:'z5'},
+      {a:'sys1', b:'z5'},
+      {a:'zap2', b:'avt3'},
+      {a:'per2', b:'brand'},
+      {a:'b2', b:'b4'}
+    ]
+  };
+
+  const SEEDS = [
+    {version:2, nodes:SEED_V2.nodes, edges:SEED_V2.edges},
+    {version:3, nodes:SEED_V3.nodes, edges:SEED_V3.edges}
+  ];
+
+  function applySeeds(st){
+    if(!st.seedVersion) st.seedVersion = 1;
     const known = new Set(st.nodes.map(n => n.id));
-    SEED_V2.nodes.forEach(n => { if(!known.has(n.id)) st.nodes.push(n); });
     const knownEdge = new Set(st.edges.map(e => e.a+'>'+e.b));
-    SEED_V2.edges.forEach(e => { if(!knownEdge.has(e.a+'>'+e.b)) st.edges.push(e); });
-    st.seedVersion = 2;
+    SEEDS.forEach(seed => {
+      if(st.seedVersion < seed.version){
+        seed.nodes.forEach(n => { if(!known.has(n.id)){ st.nodes.push(n); known.add(n.id); } });
+        seed.edges.forEach(e => { const k=e.a+'>'+e.b; if(!knownEdge.has(k)){ st.edges.push(e); knownEdge.add(k); } });
+        st.seedVersion = seed.version;
+      }
+    });
     return st;
   }
 
   function loadState(){
     try{
       const raw = localStorage.getItem(LSKEY);
-      if(raw) return applySeedV2(JSON.parse(raw));
+      if(raw) return applySeeds(JSON.parse(raw));
     }catch(e){}
-    return applySeedV2(JSON.parse(JSON.stringify(DEFAULT_STATE)));
+    return applySeeds(JSON.parse(JSON.stringify(DEFAULT_STATE)));
   }
   function saveState(){
     try{ localStorage.setItem(LSKEY, JSON.stringify(state)); }catch(e){}
@@ -510,7 +591,6 @@
   const boardEl = document.getElementById('board');
   const worldEl = document.getElementById('world');
   const nodesEl = document.getElementById('nodes');
-  const edgesSvg = document.getElementById('edges');
   const hintEl = document.getElementById('hint');
 
   let panX = 0, panY = 0, zoom = 1;
@@ -560,6 +640,16 @@
 
   let connectMode = false;
   let connectFirst = null;
+  let selectedEdge = null;
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const edgeGroup = document.getElementById('edge-group');
+  const tempLink = document.getElementById('temp-link');
+
+  function edgeKey(a,b){ return a+'>'+b; }
+
+  function clearEdgeSelection(){
+    if(selectedEdge){ selectedEdge = null; redrawEdges(); }
+  }
 
   function render(){
     nodesEl.innerHTML = '';
@@ -592,6 +682,14 @@
       });
       el.appendChild(editBtn);
 
+      ['top','bottom'].forEach(pos => {
+        const port = document.createElement('div');
+        port.className = 'port port-' + pos;
+        port.textContent = '+';
+        port.addEventListener('pointerdown', (e)=> startLinking(e, node));
+        el.appendChild(port);
+      });
+
       attachNodeHandlers(el, node);
       nodesEl.appendChild(el);
     });
@@ -599,9 +697,9 @@
   }
 
   function redrawEdges(){
+    edgeGroup.innerHTML = '';
     const byId = {};
     state.nodes.forEach(n=>byId[n.id]=n);
-    let html = '';
     state.edges.forEach(e=>{
       const a = byId[e.a], b = byId[e.b];
       if(!a || !b) return;
@@ -609,9 +707,106 @@
       const dx = b.x-a.x, dy = b.y-a.y;
       const bow = 0.12;
       const cx = mx - dy*bow, cy = my + dx*bow;
-      html += `<path d="M ${a.x} ${a.y} Q ${cx} ${cy} ${b.x} ${b.y}"/>`;
+      const d = `M ${a.x} ${a.y} Q ${cx} ${cy} ${b.x} ${b.y}`;
+      const key = edgeKey(e.a, e.b);
+      const isSelected = selectedEdge === key;
+
+      const hit = document.createElementNS(SVGNS,'path');
+      hit.setAttribute('d', d);
+      hit.setAttribute('class','edge-hit');
+      hit.addEventListener('pointerdown', ev => ev.stopPropagation());
+      hit.addEventListener('click', ev => {
+        ev.stopPropagation();
+        selectedEdge = isSelected ? null : key;
+        redrawEdges();
+      });
+      edgeGroup.appendChild(hit);
+
+      const line = document.createElementNS(SVGNS,'path');
+      line.setAttribute('d', d);
+      line.setAttribute('class', 'edge-line' + (isSelected ? ' selected' : ''));
+      edgeGroup.appendChild(line);
+
+      if(isSelected){
+        const cutG = document.createElementNS(SVGNS,'g');
+        cutG.setAttribute('class','edge-cut');
+        cutG.setAttribute('transform', `translate(${cx},${cy})`);
+        const circle = document.createElementNS(SVGNS,'circle');
+        circle.setAttribute('r','13');
+        const text = document.createElementNS(SVGNS,'text');
+        text.textContent = '−';
+        cutG.appendChild(circle);
+        cutG.appendChild(text);
+        cutG.addEventListener('pointerdown', ev => ev.stopPropagation());
+        cutG.addEventListener('click', ev => {
+          ev.stopPropagation();
+          state.edges = state.edges.filter(x => edgeKey(x.a,x.b) !== key);
+          selectedEdge = null;
+          saveState();
+          redrawEdges();
+        });
+        edgeGroup.appendChild(cutG);
+      }
     });
-    edgesSvg.innerHTML = html;
+  }
+
+  function startLinking(e, sourceNode){
+    e.stopPropagation();
+    e.preventDefault();
+    clearEdgeSelection();
+    const startClientX = e.clientX, startClientY = e.clientY;
+
+    function updateTemp(cx, cy){
+      const p = screenToWorld(cx, cy);
+      tempLink.setAttribute('d', `M ${sourceNode.x} ${sourceNode.y} L ${p.x} ${p.y}`);
+    }
+    tempLink.style.display = '';
+    updateTemp(startClientX, startClientY);
+
+    function onMove(ev){ updateTemp(ev.clientX, ev.clientY); }
+
+    function onUp(ev){
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onCancel);
+      tempLink.style.display = 'none';
+
+      const dropEl = document.elementFromPoint(ev.clientX, ev.clientY);
+      const targetNodeEl = dropEl ? dropEl.closest('.node') : null;
+      const dist = Math.hypot(ev.clientX-startClientX, ev.clientY-startClientY);
+
+      if(targetNodeEl && targetNodeEl.dataset.id !== sourceNode.id){
+        const targetId = targetNodeEl.dataset.id;
+        const exists = state.edges.some(x =>
+          (x.a===sourceNode.id && x.b===targetId) || (x.a===targetId && x.b===sourceNode.id));
+        if(!exists){
+          state.edges.push({a: sourceNode.id, b: targetId});
+          saveState();
+          redrawEdges();
+        }
+      } else if(!targetNodeEl && dist > 15){
+        const p = screenToWorld(ev.clientX, ev.clientY);
+        const id = 'n' + Date.now();
+        const newNode = {id, kind:'leaf', status:'todo', x:p.x, y:p.y, text:''};
+        state.nodes.push(newNode);
+        state.edges.push({a: sourceNode.id, b: id});
+        render();
+        requestAnimationFrame(()=>{
+          const elNew = nodesEl.querySelector(`[data-id="${id}"]`);
+          if(elNew) enterEdit(elNew, newNode);
+        });
+      }
+    }
+    function onCancel(){
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onCancel);
+      tempLink.style.display = 'none';
+    }
+
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+    document.addEventListener('pointercancel', onCancel);
   }
 
   // ---------- node interaction ----------
@@ -622,6 +817,7 @@
     el.addEventListener('pointerdown', (e)=>{
       e.stopPropagation();
       if(el.classList.contains('editing')) return;
+      clearEdgeSelection();
       pointerId = e.pointerId;
       try{ el.setPointerCapture(pointerId); }catch(err){}
       startX = e.clientX; startY = e.clientY;
@@ -704,6 +900,7 @@
     el.classList.add('editing');
     const editBtn = el.querySelector('.edit-btn');
     if(editBtn) editBtn.style.display = 'none';
+    el.querySelectorAll('.port').forEach(p => p.style.display = 'none');
     const txt = el.querySelector('.txt');
     txt.contentEditable = 'true';
     txt.focus();
@@ -760,6 +957,7 @@
 
   boardEl.addEventListener('pointerdown', (e)=>{
     if(e.target.closest('.node')) return;
+    clearEdgeSelection();
     try{ boardEl.setPointerCapture(e.pointerId); }catch(err){}
     pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
 
@@ -840,7 +1038,7 @@
 
   document.getElementById('btn-reset').addEventListener('click', ()=>{
     if(confirm('Сбросить карту к исходной? Все свои узлы и связи удалятся.')){
-      state = applySeedV2(JSON.parse(JSON.stringify(DEFAULT_STATE)));
+      state = applySeeds(JSON.parse(JSON.stringify(DEFAULT_STATE)));
       saveState();
       render();
       fitView();
