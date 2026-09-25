@@ -806,6 +806,7 @@
         const newNode = {id, kind:'leaf', status:'todo', x:p.x, y:p.y, text:''};
         state.nodes.push(newNode);
         state.edges.push({a: sourceNode.id, b: id});
+        saveState();
         render();
         requestAnimationFrame(()=>{
           const elNew = nodesEl.querySelector(`[data-id="${id}"]`);
@@ -1033,6 +1034,7 @@
     const id = 'n' + Date.now();
     const node = {id, kind:'leaf', status:'todo', x:pos.x, y:pos.y, text:''};
     state.nodes.push(node);
+    saveState();
     render();
     requestAnimationFrame(()=>{
       const el = nodesEl.querySelector(`[data-id="${id}"]`);
