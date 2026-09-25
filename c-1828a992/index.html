@@ -698,6 +698,18 @@
       });
       el.appendChild(editBtn);
 
+      if(node.kind !== 'goal'){
+        const delBtn = document.createElement('div');
+        delBtn.className = 'del-btn';
+        delBtn.textContent = '✕';
+        delBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); e.preventDefault(); });
+        delBtn.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          if(confirm('Удалить узел «' + node.text + '»?')) deleteNode(node.id);
+        });
+        el.appendChild(delBtn);
+      }
+
       ['top','bottom'].forEach(pos => {
         const port = document.createElement('div');
         port.className = 'port port-' + pos;
@@ -912,11 +924,20 @@
     render();
   }
 
+  function deleteNode(id){
+    state.nodes = state.nodes.filter(n => n.id !== id);
+    state.edges = state.edges.filter(e => e.a !== id && e.b !== id);
+    saveState();
+    render();
+  }
+
   function enterEdit(el, node){
     if(el.classList.contains('editing')) return;
     el.classList.add('editing');
     const editBtn = el.querySelector('.edit-btn');
     if(editBtn) editBtn.style.display = 'none';
+    const delBtn = el.querySelector('.del-btn');
+    if(delBtn) delBtn.style.display = 'none';
     el.querySelectorAll('.port').forEach(p => p.style.display = 'none');
     const txt = el.querySelector('.txt');
     txt.contentEditable = 'true';
@@ -927,32 +948,10 @@
     sel.removeAllRanges();
     sel.addRange(range);
 
-    let deleting = false;
-
-    const del = document.createElement('div');
-    del.className = 'del-btn';
-    del.textContent = '✕';
-    del.style.display = node.id === 'goal' ? 'none' : 'flex';
-    del.addEventListener('pointerdown', (e)=>{
-      e.preventDefault();
-      e.stopPropagation();
-      deleting = true;
-      state.nodes = state.nodes.filter(n => n.id !== node.id);
-      state.edges = state.edges.filter(ed => ed.a !== node.id && ed.b !== node.id);
-      saveState();
-      render();
-    });
-    el.appendChild(del);
-
     function commit(){
-      if(deleting) return;
+      if(!el.classList.contains('editing')) return;
       const v = txt.textContent.trim();
-      if(!v && node.id !== 'goal'){
-        state.nodes = state.nodes.filter(n => n.id !== node.id);
-        state.edges = state.edges.filter(ed => ed.a !== node.id && ed.b !== node.id);
-      } else if(v){
-        node.text = v;
-      }
+      if(v) node.text = v;
       saveState();
       render();
     }
