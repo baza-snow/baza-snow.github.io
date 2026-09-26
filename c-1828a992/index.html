@@ -244,10 +244,9 @@
     color:var(--muted);
     white-space:nowrap;
   }
-  .deadline-badge.tier-d5{color:var(--branch);}
-  .deadline-badge.tier-d3{color:var(--progress);}
-  .deadline-badge.tier-d1{color:var(--danger);font-weight:800;}
-  .deadline-badge.tier-over{color:var(--danger);font-weight:800;text-decoration:underline;}
+  .deadline-badge.tier-green{color:var(--todo);}
+  .deadline-badge.tier-yellow{color:var(--progress);}
+  .deadline-badge.tier-red{color:var(--danger);font-weight:800;}
 
   #upcoming{
     position:fixed;
@@ -294,12 +293,12 @@
     text-transform:uppercase;
     letter-spacing:.03em;
   }
-  .upcoming-chip.tier-d5{border-color:var(--branch);}
-  .upcoming-chip.tier-d5 small{color:var(--branch);}
-  .upcoming-chip.tier-d3{border-color:var(--progress);}
-  .upcoming-chip.tier-d3 small{color:var(--progress);}
-  .upcoming-chip.tier-d1, .upcoming-chip.tier-over{border-color:var(--danger);background:rgba(227,101,79,.12);}
-  .upcoming-chip.tier-d1 small, .upcoming-chip.tier-over small{color:var(--danger);font-weight:700;}
+  .upcoming-chip.tier-green{border-color:var(--todo);}
+  .upcoming-chip.tier-green small{color:var(--todo);}
+  .upcoming-chip.tier-yellow{border-color:var(--progress);}
+  .upcoming-chip.tier-yellow small{color:var(--progress);}
+  .upcoming-chip.tier-red{border-color:var(--danger);background:rgba(227,101,79,.12);}
+  .upcoming-chip.tier-red small{color:var(--danger);font-weight:700;}
 
   /* chrome */
   .topbar{
@@ -869,11 +868,9 @@
   }
 
   function urgencyTier(days){
-    if(days < 0) return 'over';
-    if(days <= 1) return 'd1';
-    if(days <= 3) return 'd3';
-    if(days <= 5) return 'd5';
-    return null;
+    if(days < 3) return 'red';
+    if(days <= 5) return 'yellow';
+    return 'green';
   }
 
   function formatDeadline(dateStr){
@@ -912,8 +909,8 @@
     const items = state.nodes
       .filter(n => n.deadline)
       .map(n => ({node:n, days: daysUntil(n.deadline)}))
-      .filter(x => x.days <= 5)
-      .sort((a,b) => a.days - b.days);
+      .sort((a,b) => a.days - b.days)
+      .slice(0, 5);
 
     if(!items.length){
       upcomingEl.style.display = 'none';
