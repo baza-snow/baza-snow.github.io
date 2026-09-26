@@ -220,6 +220,89 @@
     touch-action:none;
   }
 
+  .deadline-btn{
+    position:absolute;
+    top:-9px;left:-9px;
+    width:24px;height:24px;
+    border-radius:50%;
+    background:var(--surface-2);
+    border:2px solid var(--bg);
+    font-size:12px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    touch-action:none;
+  }
+  .deadline-input{
+    position:absolute;
+    top:-9px;left:-9px;
+    width:24px;height:24px;
+    opacity:0;
+    pointer-events:none;
+  }
+  .deadline-badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--muted);
+    white-space:nowrap;
+  }
+  .deadline-badge.tier-d5{color:var(--branch);}
+  .deadline-badge.tier-d3{color:var(--progress);}
+  .deadline-badge.tier-d1{color:var(--danger);font-weight:800;}
+  .deadline-badge.tier-over{color:var(--danger);font-weight:800;text-decoration:underline;}
+
+  #upcoming{
+    position:fixed;
+    left:14px;right:14px;
+    bottom:88px;
+    display:none;
+    gap:8px;
+    overflow-x:auto;
+    padding:2px 2px 6px;
+    z-index:5;
+    -webkit-overflow-scrolling:touch;
+  }
+  #upcoming::-webkit-scrollbar{display:none;}
+  .upcoming-chip{
+    flex:0 0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    background:rgba(19,26,34,.92);
+    backdrop-filter:blur(10px);
+    border:1px solid var(--border-soft);
+    border-radius:14px;
+    padding:8px 12px;
+    min-width:120px;
+    max-width:200px;
+    cursor:pointer;
+  }
+  .upcoming-chip b{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--muted);
+    font-weight:700;
+  }
+  .upcoming-chip span{
+    font-size:12.5px;
+    font-weight:600;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .upcoming-chip small{
+    font-size:10px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+  .upcoming-chip.tier-d5{border-color:var(--branch);}
+  .upcoming-chip.tier-d5 small{color:var(--branch);}
+  .upcoming-chip.tier-d3{border-color:var(--progress);}
+  .upcoming-chip.tier-d3 small{color:var(--progress);}
+  .upcoming-chip.tier-d1, .upcoming-chip.tier-over{border-color:var(--danger);background:rgba(227,101,79,.12);}
+  .upcoming-chip.tier-d1 small, .upcoming-chip.tier-over small{color:var(--danger);font-weight:700;}
+
   /* chrome */
   .topbar{
     position:fixed;
@@ -416,6 +499,8 @@
 </div>
 
 <div class="hint" id="hint"></div>
+
+<div id="upcoming"></div>
 
 <div class="toolbar">
   <button class="primary" id="btn-add">+ Узел</button>
@@ -623,6 +708,7 @@
   const worldEl = document.getElementById('world');
   const nodesEl = document.getElementById('nodes');
   const hintEl = document.getElementById('hint');
+  const upcomingEl = document.getElementById('upcoming');
 
   let panX = 0, panY = 0, zoom = 1;
   function applyTransform(){
@@ -658,6 +744,94 @@
     panY = r.height/2 - (minY+maxY)/2*zoom;
     applyTransform();
     redrawEdges();
+  }
+
+  // ---------- deadlines ----------
+
+  const MONTHS_SHORT = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+
+  function daysUntil(dateStr){
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const target = new Date(dateStr + 'T00:00:00');
+    return Math.round((target - today) / 86400000);
+  }
+
+  function urgencyTier(days){
+    if(days < 0) return 'over';
+    if(days <= 1) return 'd1';
+    if(days <= 3) return 'd3';
+    if(days <= 5) return 'd5';
+    return null;
+  }
+
+  function formatDeadline(dateStr){
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.getDate() + ' ' + MONTHS_SHORT[d.getMonth()];
+  }
+
+  function pad2(n){ return String(n).padStart(2,'0'); }
+
+  function addToCalendar(node){
+    const dstr = node.deadline.replace(/-/g,'');
+    const now = new Date();
+    const stamp = now.getUTCFullYear()+pad2(now.getUTCMonth()+1)+pad2(now.getUTCDate())+'T'+pad2(now.getUTCHours())+pad2(now.getUTCMinutes())+pad2(now.getUTCSeconds())+'Z';
+    const summary = node.text.replace(/[,;\r\n]/g,' ').trim() || 'Задача';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Kompas//RU',
+      'BEGIN:VEVENT',
+      'UID:' + node.id + '@kompas-bolshakova',
+      'DTSTAMP:' + stamp,
+      'DTSTART;VALUE=DATE:' + dstr,
+      'SUMMARY:' + summary,
+      'BEGIN:VALARM','TRIGGER:-P5D','ACTION:DISPLAY','DESCRIPTION:Дедлайн через 5 дней: ' + summary,'END:VALARM',
+      'BEGIN:VALARM','TRIGGER:-P3D','ACTION:DISPLAY','DESCRIPTION:Дедлайн через 3 дня: ' + summary,'END:VALARM',
+      'BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:Дедлайн завтра: ' + summary,'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+    const blob = new Blob([ics], {type:'text/calendar'});
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  }
+
+  function renderUpcoming(){
+    const items = state.nodes
+      .filter(n => n.deadline)
+      .map(n => ({node:n, days: daysUntil(n.deadline)}))
+      .filter(x => x.days <= 5)
+      .sort((a,b) => a.days - b.days);
+
+    if(!items.length){
+      upcomingEl.style.display = 'none';
+      upcomingEl.innerHTML = '';
+      return;
+    }
+    upcomingEl.style.display = 'flex';
+    upcomingEl.innerHTML = '';
+    items.forEach(({node, days}) => {
+      const chip = document.createElement('div');
+      const tier = urgencyTier(days);
+      chip.className = 'upcoming-chip' + (tier ? ' tier-' + tier : '');
+      const dateEl = document.createElement('b');
+      dateEl.textContent = formatDeadline(node.deadline);
+      const textEl = document.createElement('span');
+      textEl.textContent = node.text;
+      const labelEl = document.createElement('small');
+      labelEl.textContent = days < 0 ? 'просрочено' : days === 0 ? 'сегодня' : days === 1 ? 'завтра' : `через ${days} дн.`;
+      chip.appendChild(dateEl);
+      chip.appendChild(textEl);
+      chip.appendChild(labelEl);
+      chip.addEventListener('click', () => {
+        const r = boardRect();
+        panX = r.width/2 - node.x*zoom;
+        panY = r.height/2 - node.y*zoom;
+        applyTransform();
+      });
+      upcomingEl.appendChild(chip);
+    });
   }
 
   // ---------- rendering ----------
@@ -704,6 +878,41 @@
       txt.textContent = node.text;
       el.appendChild(txt);
 
+      if(node.deadline){
+        const days = daysUntil(node.deadline);
+        const tier = urgencyTier(days);
+        const badge = document.createElement('span');
+        badge.className = 'deadline-badge' + (tier ? ' tier-' + tier : '');
+        badge.textContent = formatDeadline(node.deadline);
+        el.appendChild(badge);
+      }
+
+      const dlInput = document.createElement('input');
+      dlInput.type = 'date';
+      dlInput.className = 'deadline-input';
+      if(node.deadline) dlInput.value = node.deadline;
+      dlInput.addEventListener('pointerdown', e => e.stopPropagation());
+      dlInput.addEventListener('click', e => e.stopPropagation());
+      dlInput.addEventListener('change', () => {
+        node.deadline = dlInput.value || null;
+        saveState();
+        render();
+        if(node.deadline && confirm('Добавить в календарь телефона с напоминаниями за 5, 3 и 1 день?')){
+          addToCalendar(node);
+        }
+      });
+      el.appendChild(dlInput);
+
+      const dlBtn = document.createElement('div');
+      dlBtn.className = 'deadline-btn';
+      dlBtn.textContent = '📅';
+      dlBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); e.preventDefault(); });
+      dlBtn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if(dlInput.showPicker){ dlInput.showPicker(); } else { dlInput.click(); }
+      });
+      el.appendChild(dlBtn);
+
       const editBtn = document.createElement('div');
       editBtn.className = 'edit-btn';
       editBtn.textContent = '✏️';
@@ -738,6 +947,7 @@
       nodesEl.appendChild(el);
     });
     redrawEdges();
+    renderUpcoming();
   }
 
   function redrawEdges(){
@@ -955,6 +1165,8 @@
     if(editBtn) editBtn.style.display = 'none';
     const delBtn = el.querySelector('.del-btn');
     if(delBtn) delBtn.style.display = 'none';
+    const dlBtn = el.querySelector('.deadline-btn');
+    if(dlBtn) dlBtn.style.display = 'none';
     el.querySelectorAll('.port').forEach(p => p.style.display = 'none');
     const txt = el.querySelector('.txt');
     txt.contentEditable = 'true';
