@@ -156,6 +156,9 @@
     padding:12px 18px;
   }
   .node.leaf{font-weight:500;}
+  .node.leaf[data-status="todo"]{border-width:2px;border-color:var(--todo);}
+  .node.leaf[data-status="progress"]{border-width:2px;border-color:var(--progress);}
+  .node.leaf[data-status="done"]{border-width:2px;border-color:var(--done);}
 
   .node.selected{
     box-shadow:0 0 0 3px var(--branch), var(--shadow);
@@ -166,8 +169,6 @@
     border-radius:50%;
     background:var(--todo);
   }
-  .node[data-status="progress"] .dot{background:var(--progress);}
-  .node[data-status="done"] .dot{background:var(--done);}
 
   .edit-btn{
     position:absolute;
@@ -881,11 +882,6 @@
       el.style.top = node.y + 'px';
       if(connectMode && connectFirst === node.id) el.classList.add('selected');
 
-      if(node.kind !== 'goal'){
-        const dot = document.createElement('i');
-        dot.className = 'dot';
-        el.appendChild(dot);
-      }
       const txt = document.createElement('span');
       txt.className = 'txt';
       txt.textContent = node.text;
