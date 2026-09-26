@@ -232,13 +232,6 @@
     cursor:pointer;
     touch-action:none;
   }
-  .deadline-input{
-    position:absolute;
-    top:-9px;left:-9px;
-    width:24px;height:24px;
-    opacity:0;
-    pointer-events:none;
-  }
   .deadline-badge{
     font-family:'IBM Plex Mono',monospace;
     font-size:10.5px;
@@ -772,6 +765,26 @@
 
   function pad2(n){ return String(n).padStart(2,'0'); }
 
+  function formatForPrompt(iso){
+    const [y,m,d] = iso.split('-');
+    return d + '.' + m + '.' + y;
+  }
+
+  function parseDeadlineInput(str){
+    const m = str.match(/^(\d{1,2})[.\/](\d{1,2})(?:[.\/](\d{2,4}))?$/);
+    if(!m) return null;
+    const day = parseInt(m[1],10), month = parseInt(m[2],10);
+    if(month < 1 || month > 12 || day < 1 || day > 31) return null;
+    let year = m[3] ? parseInt(m[3],10) : new Date().getFullYear();
+    if(year < 100) year += 2000;
+    if(!m[3]){
+      const candidate = new Date(year, month-1, day);
+      const today = new Date(); today.setHours(0,0,0,0);
+      if(candidate < today) year += 1;
+    }
+    return year + '-' + pad2(month) + '-' + pad2(day);
+  }
+
   function addToCalendar(node){
     const dstr = node.deadline.replace(/-/g,'');
     const now = new Date();
@@ -887,30 +900,34 @@
         el.appendChild(badge);
       }
 
-      const dlId = 'dl-' + node.id;
-      const dlInput = document.createElement('input');
-      dlInput.type = 'date';
-      dlInput.id = dlId;
-      dlInput.className = 'deadline-input';
-      if(node.deadline) dlInput.value = node.deadline;
-      dlInput.addEventListener('pointerdown', e => e.stopPropagation());
-      dlInput.addEventListener('click', e => e.stopPropagation());
-      dlInput.addEventListener('change', () => {
-        node.deadline = dlInput.value || null;
+      const dlBtn = document.createElement('div');
+      dlBtn.className = 'deadline-btn';
+      dlBtn.textContent = '📅';
+      dlBtn.addEventListener('pointerdown', e => e.stopPropagation());
+      dlBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        const current = node.deadline ? formatForPrompt(node.deadline) : '';
+        const answer = prompt('Дедлайн для «' + node.text + '»\nФормат: ДД.ММ или ДД.ММ.ГГГГ\nПусто — убрать дедлайн', current);
+        if(answer === null) return;
+        const trimmed = answer.trim();
+        if(!trimmed){
+          node.deadline = null;
+          saveState();
+          render();
+          return;
+        }
+        const parsed = parseDeadlineInput(trimmed);
+        if(!parsed){
+          alert('Не понял дату. Пиши так: 27.09 или 27.09.2026');
+          return;
+        }
+        node.deadline = parsed;
         saveState();
         render();
-        if(node.deadline && confirm('Добавить в календарь телефона с напоминаниями за 5, 3 и 1 день?')){
+        if(confirm('Добавить в календарь телефона с напоминаниями за 5, 3 и 1 день?')){
           addToCalendar(node);
         }
       });
-      el.appendChild(dlInput);
-
-      const dlBtn = document.createElement('label');
-      dlBtn.className = 'deadline-btn';
-      dlBtn.setAttribute('for', dlId);
-      dlBtn.textContent = '📅';
-      dlBtn.addEventListener('pointerdown', e => e.stopPropagation());
-      dlBtn.addEventListener('click', e => e.stopPropagation());
       el.appendChild(dlBtn);
 
       const editBtn = document.createElement('div');
