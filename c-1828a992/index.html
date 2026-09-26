@@ -224,29 +224,18 @@
   .deadline-input{
     position:absolute;
     top:-9px;left:-9px;
-    width:24px;height:24px;
-    border-radius:50%;
+    width:64px;height:26px;
+    border-radius:13px;
     background:var(--surface-2);
     border:2px solid var(--bg);
-    color:transparent;
-    -webkit-appearance:none;
-    appearance:none;
-    font-size:1px;
-    padding:0;
-    margin:0;
+    color:var(--text);
+    font-size:10px;
+    font-family:'IBM Plex Mono',monospace;
+    padding:0 4px;
     cursor:pointer;
     touch-action:none;
     color-scheme:dark;
-    z-index:1;
-  }
-  .deadline-icon{
-    position:absolute;
-    top:-9px;left:-9px;
-    width:24px;height:24px;
-    display:flex;align-items:center;justify-content:center;
-    font-size:12px;
-    pointer-events:none;
-    z-index:2;
+    z-index:3;
   }
   .deadline-badge{
     font-family:'IBM Plex Mono',monospace;
@@ -1020,11 +1009,6 @@
       });
       el.appendChild(dlInput);
 
-      const dlIcon = document.createElement('div');
-      dlIcon.className = 'deadline-icon';
-      dlIcon.textContent = '📅';
-      el.appendChild(dlIcon);
-
       const editBtn = document.createElement('div');
       editBtn.className = 'edit-btn';
       editBtn.textContent = '✏️';
@@ -1279,8 +1263,6 @@
     if(delBtn) delBtn.style.display = 'none';
     const dlInput = el.querySelector('.deadline-input');
     if(dlInput) dlInput.style.display = 'none';
-    const dlIcon = el.querySelector('.deadline-icon');
-    if(dlIcon) dlIcon.style.display = 'none';
     el.querySelectorAll('.port').forEach(p => p.style.display = 'none');
     const txt = el.querySelector('.txt');
     txt.contentEditable = 'true';
