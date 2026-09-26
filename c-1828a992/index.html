@@ -232,6 +232,14 @@
     display:flex;align-items:center;justify-content:center;
     cursor:pointer;
     touch-action:none;
+    z-index:1;
+  }
+  .deadline-input{
+    position:absolute;
+    top:-9px;left:-9px;
+    width:24px;height:24px;
+    opacity:0.01;
+    pointer-events:none;
   }
   .deadline-badge{
     font-family:'IBM Plex Mono',monospace;
@@ -989,26 +997,29 @@
         el.appendChild(badge);
       }
 
+      const dlInput = document.createElement('input');
+      dlInput.type = 'date';
+      dlInput.className = 'deadline-input';
+      if(node.deadline) dlInput.value = node.deadline;
+      dlInput.addEventListener('pointerdown', e => e.stopPropagation());
+      dlInput.addEventListener('click', e => e.stopPropagation());
+      dlInput.addEventListener('change', async () => {
+        node.deadline = dlInput.value || null;
+        saveState();
+        render();
+        if(node.deadline && await customConfirm('Добавить в календарь телефона с напоминаниями за 5, 3 и 1 день?')){
+          addToCalendar(node);
+        }
+      });
+      el.appendChild(dlInput);
+
       const dlBtn = document.createElement('div');
       dlBtn.className = 'deadline-btn';
       dlBtn.textContent = '📅';
       dlBtn.addEventListener('pointerdown', e => e.stopPropagation());
-      dlBtn.addEventListener('click', async (e) => {
+      dlBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const answer = await customPrompt('Дедлайн задачи\nПусто — убрать дедлайн', node.deadline || '');
-        if(answer === null) return;
-        if(!answer){
-          node.deadline = null;
-          saveState();
-          render();
-          return;
-        }
-        node.deadline = answer;
-        saveState();
-        render();
-        if(await customConfirm('Добавить в календарь телефона с напоминаниями за 5, 3 и 1 день?')){
-          addToCalendar(node);
-        }
+        if(dlInput.showPicker){ dlInput.showPicker(); } else { dlInput.focus(); }
       });
       el.appendChild(dlBtn);
 
