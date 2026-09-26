@@ -887,8 +887,10 @@
         el.appendChild(badge);
       }
 
+      const dlId = 'dl-' + node.id;
       const dlInput = document.createElement('input');
       dlInput.type = 'date';
+      dlInput.id = dlId;
       dlInput.className = 'deadline-input';
       if(node.deadline) dlInput.value = node.deadline;
       dlInput.addEventListener('pointerdown', e => e.stopPropagation());
@@ -903,14 +905,12 @@
       });
       el.appendChild(dlInput);
 
-      const dlBtn = document.createElement('div');
+      const dlBtn = document.createElement('label');
       dlBtn.className = 'deadline-btn';
+      dlBtn.setAttribute('for', dlId);
       dlBtn.textContent = '📅';
-      dlBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); });
-      dlBtn.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        if(dlInput.showPicker){ dlInput.showPicker(); } else { dlInput.click(); }
-      });
+      dlBtn.addEventListener('pointerdown', e => e.stopPropagation());
+      dlBtn.addEventListener('click', e => e.stopPropagation());
       el.appendChild(dlBtn);
 
       const editBtn = document.createElement('div');
