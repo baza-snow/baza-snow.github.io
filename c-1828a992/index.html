@@ -80,8 +80,7 @@
   }
   svg#edges path.edge-hit{
     stroke:transparent;
-    stroke-width:24;
-    pointer-events:stroke;
+    pointer-events:all;
     cursor:pointer;
   }
   svg#edges path.edge-line{
@@ -758,6 +757,7 @@
       const hit = document.createElementNS(SVGNS,'path');
       hit.setAttribute('d', d);
       hit.setAttribute('class','edge-hit');
+      hit.setAttribute('stroke-width', Math.max(24 / zoom, 24));
       hit.addEventListener('pointerdown', ev => ev.stopPropagation());
       hit.addEventListener('click', ev => {
         ev.stopPropagation();
@@ -774,9 +774,9 @@
       if(isSelected){
         const cutG = document.createElementNS(SVGNS,'g');
         cutG.setAttribute('class','edge-cut');
-        cutG.setAttribute('transform', `translate(${cx},${cy})`);
+        cutG.setAttribute('transform', `translate(${cx},${cy}) scale(${1/zoom})`);
         const circle = document.createElementNS(SVGNS,'circle');
-        circle.setAttribute('r','13');
+        circle.setAttribute('r','16');
         const text = document.createElementNS(SVGNS,'text');
         text.textContent = '−';
         cutG.appendChild(circle);
