@@ -156,9 +156,9 @@
     padding:12px 18px;
   }
   .node.leaf{font-weight:500;}
-  .node.leaf[data-status="todo"]{border-width:2px;border-color:var(--todo);}
-  .node.leaf[data-status="progress"]{border-width:2px;border-color:var(--progress);}
-  .node.leaf[data-status="done"]{border-width:2px;border-color:var(--done);}
+  .node.leaf[data-urgency="green"]{border-width:2px;border-color:var(--todo);}
+  .node.leaf[data-urgency="yellow"]{border-width:2px;border-color:var(--progress);}
+  .node.leaf[data-urgency="red"]{border-width:2px;border-color:var(--danger);}
 
   .node.selected{
     box-shadow:0 0 0 3px var(--branch), var(--shadow);
@@ -562,9 +562,9 @@
 <div class="topbar">
   <div class="brand">Компас<small>карта цели · @bolshakoff.life</small></div>
   <div class="legend">
-    <span><i class="dot" style="background:var(--todo)"></i>открыта</span>
-    <span><i class="dot" style="background:var(--progress)"></i>в деле</span>
-    <span><i class="dot" style="background:var(--done)"></i>закрыта</span>
+    <span><i class="dot" style="background:var(--todo)"></i>5+ дней</span>
+    <span><i class="dot" style="background:var(--progress)"></i>3–5 дней</span>
+    <span><i class="dot" style="background:var(--danger)"></i>&lt;3 дней</span>
   </div>
 </div>
 
@@ -944,12 +944,8 @@
 
   // ---------- rendering ----------
 
-  function statusOf(node){ return node.status || 'todo'; }
-
   function nodeClass(node){
-    let c = 'node ' + node.kind;
-    if(node.kind !== 'goal' && statusOf(node) === 'done') c += ' done';
-    return c;
+    return 'node ' + node.kind;
   }
 
   let connectMode = false;
@@ -971,7 +967,7 @@
       const el = document.createElement('div');
       el.className = nodeClass(node);
       el.dataset.id = node.id;
-      if(node.kind !== 'goal') el.setAttribute('data-status', statusOf(node));
+      if(node.deadline) el.setAttribute('data-urgency', urgencyTier(daysUntil(node.deadline)));
       el.style.left = node.x + 'px';
       el.style.top = node.y + 'px';
       if(connectMode && connectFirst === node.id) el.classList.add('selected');
@@ -1207,21 +1203,10 @@
     });
   }
 
-  function cycleStatus(node){
-    const order = ['todo','progress','done'];
-    const i = order.indexOf(statusOf(node));
-    node.status = order[(i+1) % order.length];
-    saveState();
-    render();
-  }
-
   function handleTap(node){
     if(connectMode){
       handleConnectTap(node.id);
-      return;
     }
-    if(node.kind === 'goal') return;
-    cycleStatus(node);
   }
 
   function handleConnectTap(id){
