@@ -459,6 +459,67 @@
     font-family:'IBM Plex Mono',monospace;
     min-height:16px;
   }
+
+  #modal{
+    position:fixed;
+    inset:0;
+    z-index:200;
+    background:rgba(6,8,12,.72);
+    backdrop-filter:blur(4px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  #modal.hidden{display:none;}
+  .modal-box{
+    background:var(--surface);
+    border:1.5px solid var(--border-soft);
+    border-radius:16px;
+    padding:20px;
+    width:100%;
+    max-width:340px;
+    box-shadow:var(--shadow);
+  }
+  .modal-msg{
+    font-size:14.5px;
+    line-height:1.4;
+    white-space:pre-wrap;
+    margin-bottom:14px;
+  }
+  #modal-input{
+    display:none;
+    width:100%;
+    background:var(--surface-2);
+    border:1.5px solid var(--border);
+    border-radius:10px;
+    padding:11px 13px;
+    color:var(--text);
+    font-size:16px;
+    font-family:'IBM Plex Mono',monospace;
+    margin-bottom:14px;
+  }
+  #modal-input:focus{outline:none;border-color:var(--accent);}
+  .modal-actions{
+    display:flex;
+    gap:8px;
+    justify-content:flex-end;
+  }
+  .modal-actions button{
+    appearance:none;
+    border:none;
+    background:var(--surface-2);
+    color:var(--text);
+    font-family:'Sora',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    padding:10px 18px;
+    border-radius:10px;
+    cursor:pointer;
+    min-height:40px;
+  }
+  .modal-actions button.primary{background:var(--accent);color:#1a0d06;}
+  .modal-actions.alert-only #modal-cancel{display:none;}
 </style>
 </head>
 <body>
@@ -471,6 +532,17 @@
     <button type="submit">Войти</button>
   </form>
   <div class="err" id="lock-err"></div>
+</div>
+
+<div id="modal" class="hidden">
+  <div class="modal-box">
+    <div class="modal-msg" id="modal-msg"></div>
+    <input type="text" id="modal-input" inputmode="text" autocomplete="off">
+    <div class="modal-actions">
+      <button id="modal-cancel">Отмена</button>
+      <button id="modal-ok" class="primary">ОК</button>
+    </div>
+  </div>
 </div>
 
 <div id="board">
@@ -544,6 +616,46 @@
       }
     });
   }
+
+  // Свои окна вместо alert/confirm/prompt: в приложении на экране Домой
+  // (standalone) iOS часто вообще не показывает системные диалоги.
+  const modalEl = document.getElementById('modal');
+  const modalMsg = document.getElementById('modal-msg');
+  const modalInput = document.getElementById('modal-input');
+  const modalActions = document.querySelector('.modal-actions');
+  const modalCancel = document.getElementById('modal-cancel');
+  const modalOk = document.getElementById('modal-ok');
+
+  function showModal({message, withInput, defaultValue, alertOnly}){
+    return new Promise(resolve => {
+      modalMsg.textContent = message;
+      modalInput.style.display = withInput ? '' : 'none';
+      modalInput.value = withInput ? (defaultValue || '') : '';
+      modalActions.classList.toggle('alert-only', !!alertOnly);
+      modalEl.classList.remove('hidden');
+      if(withInput){ setTimeout(()=>{ modalInput.focus(); modalInput.select(); }, 60); }
+
+      function cleanup(){
+        modalEl.classList.add('hidden');
+        modalOk.removeEventListener('click', onOk);
+        modalCancel.removeEventListener('click', onCancel);
+        modalInput.removeEventListener('keydown', onKeydown);
+      }
+      function onOk(){ cleanup(); resolve(withInput ? modalInput.value : true); }
+      function onCancel(){ cleanup(); resolve(withInput ? null : false); }
+      function onKeydown(e){
+        if(e.key === 'Enter'){ e.preventDefault(); onOk(); }
+        if(e.key === 'Escape'){ onCancel(); }
+      }
+      modalOk.addEventListener('click', onOk);
+      modalCancel.addEventListener('click', onCancel);
+      modalInput.addEventListener('keydown', onKeydown);
+    });
+  }
+
+  function customPrompt(message, defaultValue){ return showModal({message, withInput:true, defaultValue}); }
+  function customConfirm(message){ return showModal({message, withInput:false}); }
+  function customAlert(message){ return showModal({message, withInput:false, alertOnly:true}); }
 
   const LSKEY = 'kompas-bolshakova-v1';
 
@@ -900,10 +1012,10 @@
       dlBtn.className = 'deadline-btn';
       dlBtn.textContent = '📅';
       dlBtn.addEventListener('pointerdown', e => e.stopPropagation());
-      dlBtn.addEventListener('click', e => {
+      dlBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         const current = node.deadline ? formatForPrompt(node.deadline) : '';
-        const answer = prompt('Дедлайн для «' + node.text + '»\nФормат: ДД.ММ или ДД.ММ.ГГГГ\nПусто — убрать дедлайн', current);
+        const answer = await customPrompt('Дедлайн: ДД.ММ или ДД.ММ.ГГГГ\nПусто — убрать дедлайн', current);
         if(answer === null) return;
         const trimmed = answer.trim();
         if(!trimmed){
@@ -914,13 +1026,13 @@
         }
         const parsed = parseDeadlineInput(trimmed);
         if(!parsed){
-          alert('Не понял дату. Пиши так: 27.09 или 27.09.2026');
+          await customAlert('Не понял дату. Пиши так: 27.09 или 27.09.2026');
           return;
         }
         node.deadline = parsed;
         saveState();
         render();
-        if(confirm('Добавить в календарь телефона с напоминаниями за 5, 3 и 1 день?')){
+        if(await customConfirm('Добавить в календарь телефона с напоминаниями за 5, 3 и 1 день?')){
           addToCalendar(node);
         }
       });
@@ -941,9 +1053,9 @@
         delBtn.className = 'del-btn';
         delBtn.textContent = '✕';
         delBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); });
-        delBtn.addEventListener('click', (e)=>{
+        delBtn.addEventListener('click', async (e)=>{
           e.stopPropagation();
-          if(confirm('Удалить узел «' + node.text + '»?')) deleteNode(node.id);
+          if(await customConfirm('Удалить узел «' + node.text + '»?')) deleteNode(node.id);
         });
         el.appendChild(delBtn);
       }
@@ -1295,8 +1407,8 @@
 
   document.getElementById('btn-fit').addEventListener('click', ()=> fitView());
 
-  document.getElementById('btn-reset').addEventListener('click', ()=>{
-    if(confirm('Сбросить карту к исходной? Все свои узлы и связи удалятся.')){
+  document.getElementById('btn-reset').addEventListener('click', async ()=>{
+    if(await customConfirm('Сбросить карту к исходной? Все свои узлы и связи удалятся.')){
       state = applySeeds(JSON.parse(JSON.stringify(DEFAULT_STATE)));
       saveState();
       render();
