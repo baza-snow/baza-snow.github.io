@@ -906,7 +906,7 @@
       const dlBtn = document.createElement('div');
       dlBtn.className = 'deadline-btn';
       dlBtn.textContent = '📅';
-      dlBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); e.preventDefault(); });
+      dlBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); });
       dlBtn.addEventListener('click', (e)=>{
         e.stopPropagation();
         if(dlInput.showPicker){ dlInput.showPicker(); } else { dlInput.click(); }
@@ -916,7 +916,7 @@
       const editBtn = document.createElement('div');
       editBtn.className = 'edit-btn';
       editBtn.textContent = '✏️';
-      editBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); e.preventDefault(); });
+      editBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); });
       editBtn.addEventListener('click', (e)=>{
         e.stopPropagation();
         enterEdit(el, node);
@@ -927,7 +927,7 @@
         const delBtn = document.createElement('div');
         delBtn.className = 'del-btn';
         delBtn.textContent = '✕';
-        delBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); e.preventDefault(); });
+        delBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); });
         delBtn.addEventListener('click', (e)=>{
           e.stopPropagation();
           if(confirm('Удалить узел «' + node.text + '»?')) deleteNode(node.id);
