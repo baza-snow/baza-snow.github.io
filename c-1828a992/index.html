@@ -498,6 +498,7 @@
     font-size:16px;
     font-family:'IBM Plex Mono',monospace;
     margin-bottom:14px;
+    color-scheme:dark;
   }
   #modal-input:focus{outline:none;border-color:var(--accent);}
   .modal-actions{
@@ -537,7 +538,7 @@
 <div id="modal" class="hidden">
   <div class="modal-box">
     <div class="modal-msg" id="modal-msg"></div>
-    <input type="text" id="modal-input" inputmode="text" autocomplete="off">
+    <input type="date" id="modal-input" autocomplete="off">
     <div class="modal-actions">
       <button id="modal-cancel">Отмена</button>
       <button id="modal-ok" class="primary">ОК</button>
@@ -878,26 +879,6 @@
 
   function pad2(n){ return String(n).padStart(2,'0'); }
 
-  function formatForPrompt(iso){
-    const [y,m,d] = iso.split('-');
-    return d + '.' + m + '.' + y;
-  }
-
-  function parseDeadlineInput(str){
-    const m = str.match(/^(\d{1,2})[.\/](\d{1,2})(?:[.\/](\d{2,4}))?$/);
-    if(!m) return null;
-    const day = parseInt(m[1],10), month = parseInt(m[2],10);
-    if(month < 1 || month > 12 || day < 1 || day > 31) return null;
-    let year = m[3] ? parseInt(m[3],10) : new Date().getFullYear();
-    if(year < 100) year += 2000;
-    if(!m[3]){
-      const candidate = new Date(year, month-1, day);
-      const today = new Date(); today.setHours(0,0,0,0);
-      if(candidate < today) year += 1;
-    }
-    return year + '-' + pad2(month) + '-' + pad2(day);
-  }
-
   function addToCalendar(node){
     const dstr = node.deadline.replace(/-/g,'');
     const now = new Date();
@@ -1014,22 +995,15 @@
       dlBtn.addEventListener('pointerdown', e => e.stopPropagation());
       dlBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        const current = node.deadline ? formatForPrompt(node.deadline) : '';
-        const answer = await customPrompt('Дедлайн: ДД.ММ или ДД.ММ.ГГГГ\nПусто — убрать дедлайн', current);
+        const answer = await customPrompt('Дедлайн задачи\nПусто — убрать дедлайн', node.deadline || '');
         if(answer === null) return;
-        const trimmed = answer.trim();
-        if(!trimmed){
+        if(!answer){
           node.deadline = null;
           saveState();
           render();
           return;
         }
-        const parsed = parseDeadlineInput(trimmed);
-        if(!parsed){
-          await customAlert('Не понял дату. Пиши так: 27.09 или 27.09.2026');
-          return;
-        }
-        node.deadline = parsed;
+        node.deadline = answer;
         saveState();
         render();
         if(await customConfirm('Добавить в календарь телефона с напоминаниями за 5, 3 и 1 день?')){
