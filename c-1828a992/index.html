@@ -221,25 +221,32 @@
     touch-action:none;
   }
 
-  .deadline-btn{
+  .deadline-input{
     position:absolute;
     top:-9px;left:-9px;
     width:24px;height:24px;
     border-radius:50%;
     background:var(--surface-2);
     border:2px solid var(--bg);
-    font-size:12px;
-    display:flex;align-items:center;justify-content:center;
+    color:transparent;
+    -webkit-appearance:none;
+    appearance:none;
+    font-size:1px;
+    padding:0;
+    margin:0;
     cursor:pointer;
     touch-action:none;
+    color-scheme:dark;
     z-index:1;
   }
-  .deadline-input{
+  .deadline-icon{
     position:absolute;
     top:-9px;left:-9px;
     width:24px;height:24px;
-    opacity:0.01;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;
     pointer-events:none;
+    z-index:2;
   }
   .deadline-badge{
     font-family:'IBM Plex Mono',monospace;
@@ -1013,15 +1020,10 @@
       });
       el.appendChild(dlInput);
 
-      const dlBtn = document.createElement('div');
-      dlBtn.className = 'deadline-btn';
-      dlBtn.textContent = '📅';
-      dlBtn.addEventListener('pointerdown', e => e.stopPropagation());
-      dlBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if(dlInput.showPicker){ dlInput.showPicker(); } else { dlInput.focus(); }
-      });
-      el.appendChild(dlBtn);
+      const dlIcon = document.createElement('div');
+      dlIcon.className = 'deadline-icon';
+      dlIcon.textContent = '📅';
+      el.appendChild(dlIcon);
 
       const editBtn = document.createElement('div');
       editBtn.className = 'edit-btn';
@@ -1275,8 +1277,10 @@
     if(editBtn) editBtn.style.display = 'none';
     const delBtn = el.querySelector('.del-btn');
     if(delBtn) delBtn.style.display = 'none';
-    const dlBtn = el.querySelector('.deadline-btn');
-    if(dlBtn) dlBtn.style.display = 'none';
+    const dlInput = el.querySelector('.deadline-input');
+    if(dlInput) dlInput.style.display = 'none';
+    const dlIcon = el.querySelector('.deadline-icon');
+    if(dlIcon) dlIcon.style.display = 'none';
     el.querySelectorAll('.port').forEach(p => p.style.display = 'none');
     const txt = el.querySelector('.txt');
     txt.contentEditable = 'true';
