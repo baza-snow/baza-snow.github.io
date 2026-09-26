@@ -629,7 +629,7 @@
   function showModal({message, withInput, defaultValue, alertOnly}){
     return new Promise(resolve => {
       modalMsg.textContent = message;
-      modalInput.style.display = withInput ? '' : 'none';
+      modalInput.style.display = withInput ? 'block' : 'none';
       modalInput.value = withInput ? (defaultValue || '') : '';
       modalActions.classList.toggle('alert-only', !!alertOnly);
       modalEl.classList.remove('hidden');
