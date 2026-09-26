@@ -1003,7 +1003,7 @@
         node.deadline = dlInput.value || null;
         saveState();
         render();
-        if(node.deadline && await customConfirm('Добавить в календарь телефона с напоминаниями за 5, 3 и 1 день?')){
+        if(node.deadline){
           addToCalendar(node);
         }
       });
