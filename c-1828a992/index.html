@@ -504,6 +504,24 @@
     color-scheme:dark;
   }
   #modal-input:focus{outline:none;border-color:var(--accent);}
+  #modal-textarea{
+    display:none;
+    width:100%;
+    height:220px;
+    background:var(--surface-2);
+    border:1.5px solid var(--border);
+    border-radius:10px;
+    padding:11px 13px;
+    color:var(--text);
+    font-size:12px;
+    line-height:1.45;
+    font-family:'IBM Plex Mono',monospace;
+    margin-bottom:14px;
+    resize:none;
+    -webkit-user-select:text;
+    user-select:text;
+  }
+  #modal-textarea:focus{outline:none;border-color:var(--accent);}
   .modal-actions{
     display:flex;
     gap:8px;
@@ -542,6 +560,7 @@
   <div class="modal-box">
     <div class="modal-msg" id="modal-msg"></div>
     <input type="date" id="modal-input" autocomplete="off">
+    <textarea id="modal-textarea" readonly></textarea>
     <div class="modal-actions">
       <button id="modal-cancel">Отмена</button>
       <button id="modal-ok" class="primary">ОК</button>
@@ -577,7 +596,7 @@
   <button id="btn-link">Связать</button>
   <div class="sep"></div>
   <button id="btn-fit">По размеру</button>
-  <button id="btn-reset">Сброс</button>
+  <button id="btn-list">Список</button>
 </div>
 
 <script>
@@ -626,15 +645,18 @@
   const modalEl = document.getElementById('modal');
   const modalMsg = document.getElementById('modal-msg');
   const modalInput = document.getElementById('modal-input');
+  const modalTextarea = document.getElementById('modal-textarea');
   const modalActions = document.querySelector('.modal-actions');
   const modalCancel = document.getElementById('modal-cancel');
   const modalOk = document.getElementById('modal-ok');
 
-  function showModal({message, withInput, defaultValue, alertOnly}){
+  function showModal({message, withInput, defaultValue, alertOnly, textarea}){
     return new Promise(resolve => {
       modalMsg.textContent = message;
       modalInput.style.display = withInput ? 'block' : 'none';
       modalInput.value = withInput ? (defaultValue || '') : '';
+      modalTextarea.style.display = textarea ? 'block' : 'none';
+      modalTextarea.value = textarea || '';
       modalActions.classList.toggle('alert-only', !!alertOnly);
       modalEl.classList.remove('hidden');
       if(withInput){ setTimeout(()=>{ modalInput.focus(); modalInput.select(); }, 60); }
@@ -1443,13 +1465,67 @@
 
   document.getElementById('btn-fit').addEventListener('click', ()=> fitView());
 
-  document.getElementById('btn-reset').addEventListener('click', async ()=>{
-    if(await customConfirm('Сбросить карту к исходной? Все свои узлы и связи удалятся.')){
-      state = applySeeds(JSON.parse(JSON.stringify(DEFAULT_STATE)));
-      saveState();
-      render();
-      fitView();
+  function buildList(){
+    const byId = {};
+    state.nodes.forEach(n => byId[n.id] = n);
+
+    function deadlineMark(n){
+      if(!n.deadline) return '';
+      const d = daysUntil(n.deadline);
+      const when = d < 0 ? 'просрочено' : d === 0 ? 'сегодня' : d === 1 ? 'завтра' : d + ' дн.';
+      return `  [${formatDeadline(n.deadline)} — ${when}]`;
     }
+
+    const goal = state.nodes.find(n => n.kind === 'goal');
+    const branches = state.nodes.filter(n => n.kind === 'branch');
+    const out = [];
+    const today = new Date();
+    out.push(`КОМПАС — выгрузка ${today.getDate()} ${MONTHS_SHORT[today.getMonth()]} ${today.getFullYear()}`);
+    if(goal) out.push(`ЦЕЛЬ: ${goal.text}`);
+    out.push('');
+
+    const placed = new Set();
+    branches.forEach(br => {
+      out.push(`## ${br.text}${deadlineMark(br)}`);
+      const children = state.edges
+        .filter(e => e.a === br.id || e.b === br.id)
+        .map(e => e.a === br.id ? e.b : e.a)
+        .map(id => byId[id])
+        .filter(n => n && n.kind === 'leaf');
+      const seen = new Set();
+      children.forEach(n => {
+        if(seen.has(n.id)) return;
+        seen.add(n.id);
+        placed.add(n.id);
+        out.push(`- ${n.text}${deadlineMark(n)}`);
+      });
+      out.push('');
+    });
+
+    const orphans = state.nodes.filter(n => n.kind === 'leaf' && !placed.has(n.id));
+    if(orphans.length){
+      out.push('## Без ветки');
+      orphans.forEach(n => out.push(`- ${n.text}${deadlineMark(n)}`));
+      out.push('');
+    }
+
+    out.push(`Всего узлов: ${state.nodes.length}, связей: ${state.edges.length}`);
+    return out.join('\n');
+  }
+
+  document.getElementById('btn-list').addEventListener('click', async ()=>{
+    const text = buildList();
+    let copied = false;
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(text);
+        copied = true;
+      }
+    }catch(e){}
+    const msg = copied
+      ? 'Список скопирован — вставляй в чат.'
+      : 'Выдели текст и скопируй вручную:';
+    await showModal({message: msg, textarea: text, alertOnly: true});
   });
 
   window.addEventListener('resize', ()=> fitView());
