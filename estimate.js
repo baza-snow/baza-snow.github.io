@@ -175,7 +175,11 @@
       }
 
       sumBox.classList.add('is-num');
-      sumBox.innerHTML = (to > from ? money(from) + '–' + money(to) : money(from)) + ' <span>₽</span>';
+      // у работ с открытым верхом (to не задан) показываем «от», а не точную цифру
+      const openEnded = withPrice.some(s => !s.to);
+      sumBox.innerHTML = (openEnded
+        ? 'от ' + money(from)
+        : (to > from ? money(from) + '–' + money(to) : money(from))) + ' <span>₽</span>';
       noteBox.textContent = noPrice
         ? `Плюс ${noPrice === 1 ? 'одна работа' : noPrice + ' работы'} по осмотру — уточним по фото.`
         : 'Вилка предварительная. По фото назовём точно.';
