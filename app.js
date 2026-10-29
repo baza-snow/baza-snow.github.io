@@ -82,6 +82,19 @@
       </div>`).join('');
   }
 
+  // ── цена проката на видном месте ───────────────────────────
+  // «от 1 400 ₽/сутки» на первом экране и в бейджах. Цифра одна
+  // и та же — берётся из первой строки RENT, чтобы при правке
+  // прайса не искать её по разметке.
+  const rentFrom = (window.RENT || []).find(r => r.price);
+  document.querySelectorAll('[data-rent-from]').forEach(el => {
+    el.textContent = rentFrom ? rentFrom.price + ' ₽/сутки' : 'цена по запросу';
+  });
+  // крупная цифра на первом экране — только сумма, подпись рядом в разметке
+  document.querySelectorAll('[data-rent-num]').forEach(el => {
+    el.textContent = rentFrom ? rentFrom.price + ' ₽' : '—';
+  });
+
   // ── прайс сервиса ──────────────────────────────────────────
   const money = n => n.toLocaleString('ru-RU').replace(/ /g, ' ');
   const srvBox = document.getElementById('servicePrices');
