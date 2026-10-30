@@ -764,3 +764,8 @@ section{ padding:78px 0; }
   .fleet-grid{ grid-template-columns:1fr; gap:22px; }
   .price-big{ width:100%; gap:12px; padding:16px 18px; }
 }
+
+/* ── виджет отзывов Яндекса ───────────────────────────────── */
+.otzyvy-head{ display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:18px; }
+.ya-widget{ flex:0 0 auto; border-radius:10px; overflow:hidden; line-height:0; }
+.ya-widget iframe{ display:block; border:0; }
